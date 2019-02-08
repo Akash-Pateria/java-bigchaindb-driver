@@ -16,7 +16,13 @@ public enum Operations {
 	CREATE("CREATE"),
 	
 	/** The transfer. */
-	TRANSFER("TRANSFER");
+	TRANSFER("TRANSFER"),
+	
+	/** The RFQ. */
+	REQUEST_FOR_QUOTE("REQUEST_FOR_QUOTE"),
+	
+	/** The interest. */
+	INTEREST("INTEREST");
 	
 	/** The value. */
 	private final String value;

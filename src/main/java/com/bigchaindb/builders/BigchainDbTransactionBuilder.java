@@ -364,20 +364,26 @@ public class BigchainDbTransactionBuilder {
             }
 
             if (this.operation == Operations.CREATE 
-                    || this.operation == Operations.TRANSFER) {
+                    || this.operation == Operations.TRANSFER
+                    || this.operation == Operations.REQUEST_FOR_QUOTE
+                    || this.operation == Operations.INTEREST) {
                 this.transaction.setOperation(this.operation.name());
             }
            else {
-               throw new Exception("Invalid Operations value. Accepted values are [Operations.CREATE, Operations.TRANSFER]");
+               throw new Exception("Invalid Operations value. Accepted values are "
+            		   + "[Operations.CREATE, Operations.TRANSFER, Operations.REQUEST_FOR_QUOTE, "
+            		   + "Operations.INTEREST]");
            }
 
-            if (String.class.isAssignableFrom(this.assets.getClass())) {
-                // interpret as an asset ID
-                this.transaction.setAsset(new Asset((String) this.assets));
-            } else {
-                // otherwise it's an asset
-                this.transaction.setAsset(new Asset(this.assets, this.assetsDataClass));
-            }
+           if(this.assets != null) {
+        	   if (String.class.isAssignableFrom(this.assets.getClass())) {
+        		   // interpret as an asset ID
+        		   this.transaction.setAsset(new Asset((String) this.assets));
+        	   } else {
+        		   // otherwise it's an asset
+        		   this.transaction.setAsset(new Asset(this.assets, this.assetsDataClass));
+        	   }
+           }
             this.transaction.setMetaData(this.metadata);
             this.transaction.setVersion("2.0");
 
