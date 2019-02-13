@@ -72,11 +72,13 @@ public class BigchainDBJavaDriver {
         // create metadata for request txn
         MetaData req_metaData = new MetaData();
         req_metaData.setMetaData("Part Name/Description", "Phone cover");
-        req_metaData.setMetaData("Quantity", "50");
-        req_metaData.setMetaData("Extrusion Material", "silicon carbide");
-        req_metaData.setMetaData("Manufacturing Length", "6inch");
+        req_metaData.setMetaData("Quantity", "10");
+        req_metaData.setMetaData("Material", "PolyCarbonate");
+        req_metaData.setMetaData("Part Volume", "1cu in");
         req_metaData.setMetaData("Part color", "stock color");
-        req_metaData.setMetaData("Additional Services", "None");
+        req_metaData.setMetaData("Expected Delivery Time", "14days");
+        req_metaData.setMetaData("Manufacturing Process", "Additive Manufacturing");
+        req_metaData.setMetaData("Additional Services", "Protected Packaging");
         
       //execute REQUEST transaction
         String txId_req = examples.doRequest(req_metaData, keys);
@@ -146,6 +148,8 @@ public class BigchainDBJavaDriver {
                 if(operation.equals("REQUEST_FOR_QUOTE")) {
                 	Map<String, String> metaMap= metadata.getMetadata();
                 	
+                    String material = metaMap.get("Material");
+                    int quantity = Integer.parseInt(metaMap.get("Quantity"));
                 	
                 	JSONObject js = new JSONObject(metaMap);
                 	
@@ -154,9 +158,17 @@ public class BigchainDBJavaDriver {
                 	KafkaDriver kf = new KafkaDriver(rfq_form);
                 	
                 	//Rules for topic selection
-                	if(rfq_form.contains("silicon carbide")) {
-                		kf.runProducer(Capabilities.PLASTIC);
-                	}               	
+                	if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+                        if(quantity < 1000){
+                            kf.runProducer(Capabilities.3DPRINTING);
+                        }
+                        else {
+                		    kf.runProducer(Capabilities.PLASTIC);
+                        }
+                	}
+                    else{
+                        kf.runProducer(Capabilities.MISC);
+                    }
                 	
                 	System.out.println("Producer run complete");
                 
