@@ -7,8 +7,6 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-//import com.gaurav.kafka.constants.IKafkaConstants;
 public class ProducerCreator {
     public static Producer<String, String> createRequestProducer() {
         Properties props = new Properties();

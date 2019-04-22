@@ -32,6 +32,8 @@ dependencies {
     compile 'com.bigchaindb:cryptoconditions:1.0'
     compile 'org.bouncycastle:bcprov-jdk15on:1.54'
     compile 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.9'
+    compile 'org.apache.kafka:kafka_2.12:2.2.0'
+    compile 'org.json:json:20180813'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.apache.logging.log4j:log4j-core:2.9.1'
