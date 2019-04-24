@@ -160,7 +160,7 @@ public class BigchainDBJavaDriver {
                 	//Rules for topic selection
                 	if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
                         if(quantity < 1000){
-                            kf.runProducer(Capabilities.3DPRINTING);
+                            kf.runProducer(Capabilities.PRINTING_3D);
                         }
                         else {
                 		    kf.runProducer(Capabilities.PLASTIC);
