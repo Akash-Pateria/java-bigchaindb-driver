@@ -152,23 +152,29 @@ public class BigchainDBJavaDriver {
                     int quantity = Integer.parseInt(metaMap.get("Quantity"));
                 	
                 	JSONObject js = new JSONObject(metaMap);
+                	String capability;
+                	                	
+                	//Rules for topic selection
+                	if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+                        if(quantity < 1000){
+                        	capability = Capabilities.PRINTING_3D;
+                            
+                        }
+                        else {
+                        	capability = Capabilities.PLASTIC;
+                        }
+                	}
+                    else{
+                    	capability = Capabilities.MISC;
+                    }
+                	
+                	js.append("Capability", capability);
                 	
                 	String rfq_form = js.toString();
                 	
                 	KafkaDriver kf = new KafkaDriver(rfq_form);
                 	
-                	//Rules for topic selection
-                	if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
-                        if(quantity < 1000){
-                            kf.runProducer(Capabilities.PRINTING_3D);
-                        }
-                        else {
-                		    kf.runProducer(Capabilities.PLASTIC);
-                        }
-                	}
-                    else{
-                        kf.runProducer(Capabilities.MISC);
-                    }
+                	kf.runProducer(capability);
                 	
                 	System.out.println("Producer run complete");
                 
