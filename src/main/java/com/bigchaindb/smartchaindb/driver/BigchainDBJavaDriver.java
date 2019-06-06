@@ -3,9 +3,12 @@ package com.bigchaindb.smartchaindb.driver;
 
 import java.io.IOException;
 import java.security.KeyPair;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
+
+import org.json.JSONObject;
 
 import com.bigchaindb.builders.BigchainDbConfigBuilder;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
@@ -19,8 +22,6 @@ import com.bigchaindb.util.Base58;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import okhttp3.Response;
-
-import org.json.JSONObject;
 
 /**
  * simple usage of BigchainDB Java driver (https://github.com/bigchaindb/java-bigchaindb-driver)
@@ -152,29 +153,34 @@ public class BigchainDBJavaDriver {
                     int quantity = Integer.parseInt(metaMap.get("Quantity"));
                 	
                 	JSONObject js = new JSONObject(metaMap);
-                	String capability;
+                	List<String> capability = new ArrayList<String>();
                 	                	
                 	//Rules for topic selection
                 	if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
                         if(quantity < 1000){
-                        	capability = Capabilities.PRINTING_3D;
-                            
+                        	capability.add(Capabilities.PRINTING_3D);
+                        	capability.add(Capabilities.POCKET_MACHINING);
                         }
                         else {
-                        	capability = Capabilities.PLASTIC;
+                        	capability.add(Capabilities.PLASTIC);
+                        	capability.add(Capabilities.MILLING);
+                        	capability.add(Capabilities.THREADING);
                         }
                 	}
                     else{
-                    	capability = Capabilities.MISC;
+                    	capability.add(Capabilities.MISC);
                     }
                 	
+                	//Need to tag each capability with an integer.
                 	js.append("Capability", capability);
                 	
                 	String rfq_form = js.toString();
                 	
                 	KafkaDriver kf = new KafkaDriver(rfq_form);
                 	
-                	kf.runProducer(capability);
+                	for(String topic:capability) {
+                		kf.runProducer(topic);
+                	}
                 	
                 	System.out.println("Producer run complete");
                 
