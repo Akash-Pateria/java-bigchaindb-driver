@@ -178,6 +178,8 @@ public class BigchainDbTransactionBuilder {
          * @throws Exception 
          */
         Transaction buildAndSignOnly(EdDSAPublicKey publicKey, EdDSAPrivateKey privateKey) throws Exception;
+
+
     }
 
     /**
@@ -201,6 +203,10 @@ public class BigchainDbTransactionBuilder {
          * @throws TimeoutException exception on timeout
          */
         Transaction sendTransaction(GenericCallback callback) throws TimeoutException;
+
+
+        Transaction getTransaction() throws Exception;
+
     }
 
     /**
@@ -546,6 +552,10 @@ public class BigchainDbTransactionBuilder {
         public ITransactionAttributes operation(Operations operation) {
             this.operation = operation;
             return this;
+        }
+
+        public Transaction getTransaction(){
+             return this.transaction;
         }
     }
 }
