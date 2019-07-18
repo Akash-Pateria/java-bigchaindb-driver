@@ -3,11 +3,9 @@ package com.bigchaindb.smartchaindb.driver;
 
 import java.io.IOException;
 import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
+import org.apache.jena.base.Sys;
 import org.apache.kafka.common.protocol.types.Field;
 import org.json.JSONObject;
 
@@ -71,21 +69,32 @@ public class BigchainDBJavaDriver {
         //let the transaction commit in block
         Thread.sleep(500);
 
-        // create metadata for request txn
-        MetaData req_metaData = new MetaData();
-        req_metaData.setMetaData("Part Name/Description", "Phone cover");
-        req_metaData.setMetaData("Quantity", "2000");
-        req_metaData.setMetaData("Material", "PolyCarbonate");
-        req_metaData.setMetaData("Part Volume", "1cu in");
-        req_metaData.setMetaData("Part color", "stock color");
-        req_metaData.setMetaData("Expected Delivery Time", "14days");
-        req_metaData.setMetaData("Manufacturing Process", "Additive Manufacturing");
-        req_metaData.setMetaData("Additional Services", "Protected Packaging");
+        for(int i=0;i<1;i++) {
+            // create metadata for request txn
+            MetaData req_metaData = new MetaData();
+            req_metaData.setMetaData("Description", stardogTest.getDescription());
+            req_metaData.setMetaData("Quantity", stardogTest.getQuantity());
+            req_metaData.setMetaData("Material", stardogTest.getMaterial());
+            req_metaData.setMetaData("Machining Function", stardogTest.getMachiningFunction());
+//          req_metaData.setMetaData("Quantity" , "1000");
+//            req_metaData.setMetaData("Part Volume", "1cu in");
+//            req_metaData.setMetaData("Part color", "stock color");
+//            req_metaData.setMetaData("Expected Delivery Time", "14days");
+//            req_metaData.setMetaData("Manufacturing Process", "Additive Manufacturing");
+//            req_metaData.setMetaData("Additional Services", "Protected Packaging");
+////        stardogTest.runStardog();
+            //execute REQUEST transaction
+            List<String> randomAtributes = stardogTest.getKeys();
+//            System.out.println(randomAtributes.size());
+            for(int j=0;j<randomAtributes.size();j++){
+                String temp = randomAtributes.get(j);
+//                System.out.println("KEY --------- " + temp);
+                req_metaData.setMetaData(temp,stardogTest.getRandomValues(temp));
+            }
+            String txId_req = examples.doRequest(req_metaData, keys);
 
-        //execute REQUEST transaction
-        String txId_req = examples.doRequest(req_metaData, keys);
-
-        System.out.println("Request txn id: "+ txId_req );
+            System.out.println("Request txn id: " + txId_req);
+        }
 
 //----------------------------------------------------------------------------------
         //     System.out.println("(*) Metadata Prepared..");
@@ -155,7 +164,21 @@ public class BigchainDBJavaDriver {
                     List<String> capability = new ArrayList<>();
 
                     //Rules for topic selection
-                    if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+//                    if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+//                        if(quantity < 1000){
+//                            capability.add(Capabilities.PRINTING_3D);
+//                            capability.add(Capabilities.POCKET_MACHINING);
+//                        }
+//                        else {
+//                            capability.add(Capabilities.PLASTIC);
+//                            capability.add(Capabilities.MILLING);
+//                            capability.add(Capabilities.THREADING);
+//                        }
+//                    }
+//                    else{
+//                        capability.add(Capabilities.MISC);
+//                    }
+                    if(material != null && (material.equalsIgnoreCase("SiliconCarbide")|| material.equalsIgnoreCase("A-Carbon"))){
                         if(quantity < 1000){
                             capability.add(Capabilities.PRINTING_3D);
                             capability.add(Capabilities.POCKET_MACHINING);
@@ -169,6 +192,7 @@ public class BigchainDBJavaDriver {
                     else{
                         capability.add(Capabilities.MISC);
                     }
+
                     //Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id",tx_id);
@@ -202,7 +226,7 @@ public class BigchainDBJavaDriver {
      */
     public static void setConfig() {
         BigchainDbConfigBuilder
-                .baseUrl("http://152.46.19.22:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
+                .baseUrl("http://152.46.16.77:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
         //   .addToken("app_id", "ce0575bf")
         //   .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
 
