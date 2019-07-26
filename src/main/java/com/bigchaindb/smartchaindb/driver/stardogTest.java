@@ -7,6 +7,8 @@ import com.complexible.stardog.StardogException;
 import com.complexible.stardog.api.*;
 import com.complexible.stardog.api.admin.AdminConnection;
 import com.complexible.stardog.api.admin.AdminConnectionConfiguration;
+import com.complexible.stardog.db.Database;
+import com.complexible.stardog.db.DatabaseOptions;
 import com.stardog.stark.io.RDFFormats;
 import com.stardog.stark.query.SelectQueryResult;
 import com.stardog.stark.query.io.QueryResultWriters;
@@ -27,7 +29,7 @@ public class stardogTest {
 
     public static void main(String[] args) throws Exception {
 //        getKeys();
-//       getRandomValues("Material" );
+        getRandomValues("Description");
     }
     static List<String> getKeys(){
 
@@ -41,7 +43,7 @@ public class stardogTest {
                     connection.drop("testDB");
                 }
                 connection.disk("testDB").create();
-//                        connection.close();
+                        connection.close();
 
                 ConnectionConfiguration connectConfig = ConnectionConfiguration.to("testDB").server("http://localhost:5820").credentials("admin", "admin");
 
@@ -56,7 +58,7 @@ public class stardogTest {
                         connect.commit();
 
 
-                        SelectQuery squery = connect.select("select ?o1 ?o2 where \n" +
+                        SelectQuery squery = connect.select("select ?s where \n" +
                                 "{  ?s rdfs:domain ?o1.\n" +
                                 "   ?s rdfs:range ?o2 .\n" +
                                 "}");
@@ -68,9 +70,9 @@ public class stardogTest {
                         HashMap<String,String> keys = new HashMap<>();
 
                         while(sresult.hasNext()) {
-                            String temp = sresult.next().get("o1").toString();
+                            String temp = sresult.next().get("s").toString();
 //                            System.out.print(temp.substring(42) + "------------------------------");
-                            if(!temp.substring(42).equals("Material") && !temp.substring(42).equals("Quantity") && !temp.substring(42).equals("Description") && !temp.substring(42).equals("MachiningFunction")) {
+                            if(!temp.substring(42).equals("Material") && !temp.substring(42).equals("Quantity")) {
 //                                System.out.println(temp);
                                 keys.put(temp, temp.substring(42));
                             }
@@ -93,7 +95,7 @@ public class stardogTest {
                         }
 
                         for(int i=0;i<randomKeys.size();i++){
-                            System.out.println(randomKeys.get(i));
+                            System.out.println("KEYS FOR METADATA ---------- " + randomKeys.get(i));
                         }
                         return randomKeys;
 
@@ -128,7 +130,7 @@ public class stardogTest {
                     connection.drop("testDB");
                 }
                 connection.disk("testDB").create();
-//                        connection.close();
+                        connection.close();
 
                 ConnectionConfiguration connectConfig = ConnectionConfiguration.to("testDB").server("http://localhost:5820").credentials("admin", "admin");
 
@@ -262,7 +264,7 @@ public class stardogTest {
                     connection.drop("testDB");
                 }
                 connection.disk("testDB").create();
-//                        connection.close();
+                connection.close();
 
                 ConnectionConfiguration connectConfig = ConnectionConfiguration.to("testDB").server("http://localhost:5820").credentials("admin", "admin");
 
@@ -321,13 +323,13 @@ public class stardogTest {
             try (AdminConnection connection = AdminConnectionConfiguration.toServer("http://localhost:5820").credentials("admin", "admin").connect()) {
 
 
-//                connection.list().forEach(item -> System.out.println(item));
+                connection.list().forEach(item -> System.out.println(item));
                 if (connection.list().contains("testDB")) {
 //                    System.out.println("Database already present, So we are droping it");
                     connection.drop("testDB");
                 }
                 connection.disk("testDB").create();
-//                        connection.close();
+                connection.close();
 
                 ConnectionConfiguration connectConfig = ConnectionConfiguration.to("testDB").server("http://localhost:5820").credentials("admin", "admin");
 
