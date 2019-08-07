@@ -56,12 +56,15 @@ public class rulesDriver {
                 }
             }
             //random number of topics
+            HashSet<String> capSet = new HashSet<> ();
             if(check){
                 int numOfCap = rand.nextInt(topics.size())+1;
                 for(int k=0;k<numOfCap;k++){
                      int index = rand.nextInt(topics.size());
-                     capability.add(topics.get(index));
+                     capSet.add(topics.get(index));
                 }
+                capability.addAll(capSet);
+                break;
             }
         }
         if(capability.isEmpty()){

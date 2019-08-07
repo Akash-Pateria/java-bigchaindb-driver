@@ -58,7 +58,7 @@ public class stardogTest {
                         connect.commit();
 
 
-                        SelectQuery squery = connect.select("select ?s where \n" +
+                        SelectQuery squery = connect.select("select ?o1 where \n" +
                                 "{  ?s rdfs:domain ?o1.\n" +
                                 "   ?s rdfs:range ?o2 .\n" +
                                 "}");
@@ -70,7 +70,7 @@ public class stardogTest {
                         HashMap<String,String> keys = new HashMap<>();
 
                         while(sresult.hasNext()) {
-                            String temp = sresult.next().get("s").toString();
+                            String temp = sresult.next().get("o1").toString();
 //                            System.out.print(temp.substring(42) + "------------------------------");
                             if(!temp.substring(42).equals("Material") && !temp.substring(42).equals("Quantity")) {
 //                                System.out.println(temp);

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.util.*;
 
-import org.apache.jena.base.Sys;
+//import org.apache.jena.base.Sys;
 import org.apache.kafka.common.protocol.types.Field;
 import org.json.JSONObject;
 
@@ -217,7 +217,7 @@ public class BigchainDBJavaDriver {
      */
     public static void setConfig() {
         BigchainDbConfigBuilder
-                .baseUrl("http://152.46.18.50:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
+                .baseUrl("http://152.46.16.77:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
         //   .addToken("app_id", "ce0575bf")
         //   .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
 
