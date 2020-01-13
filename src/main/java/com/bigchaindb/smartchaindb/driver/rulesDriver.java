@@ -11,7 +11,12 @@ public class rulesDriver {
 //        List<String> ret = getCapabilities(temp,a);
           System.out.println("Rules");
     }
+    static Map<String, String> genratedRules(){
+        // generates random rules (rule genreation)
+    }
+
     static List<String> getCapabilities(List<String> keys, Map<String, String> metaMap){
+        // check the meta attributes with the rules generated before and assigning them to a topic.
         List<String> topics = Capabilities.getAll();
         List<String> capability = new ArrayList<>();
         Random rand = new Random();

@@ -372,13 +372,14 @@ public class BigchainDbTransactionBuilder {
             if (this.operation == Operations.CREATE 
                     || this.operation == Operations.TRANSFER
                     || this.operation == Operations.REQUEST_FOR_QUOTE
-                    || this.operation == Operations.INTEREST) {
+                    || this.operation == Operations.INTEREST
+                    || this.operation == Operations.REQUEST_FOR_BID){
                 this.transaction.setOperation(this.operation.name());
             }
            else {
                throw new Exception("Invalid Operations value. Accepted values are "
             		   + "[Operations.CREATE, Operations.TRANSFER, Operations.REQUEST_FOR_QUOTE, "
-            		   + "Operations.INTEREST]");
+            		   + "Operations.INTEREST,Operations.REQUEST_FOR_BID]");
            }
 
            if(this.assets != null) {

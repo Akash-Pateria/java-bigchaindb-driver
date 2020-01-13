@@ -38,11 +38,12 @@ public class BigchainDBJavaDriver {
      */
     public static void main(String args[]) throws Exception {
 
+        // Main to create number of requests (Bighain Metadata) and assign topics for those requests and sending it through the kafka.
         BigchainDBJavaDriver examples = new BigchainDBJavaDriver();
 
         //set configuration
         BigchainDBJavaDriver.setConfig();
-
+        int numOfRequest = 50;
         //generate Keys
         KeyPair keys = BigchainDBJavaDriver.getKeys();
 
@@ -65,11 +66,13 @@ public class BigchainDBJavaDriver {
 
         System.out.println("Create txn id: "+ txId_cre );
 
-
         //let the transaction commit in block
         Thread.sleep(500);
 
-        for(int i=0;i<50;i++) {
+        HashMap<String,Integer> topicToIdMap = new HashMap<>();               //hashmap to store the topics and its id's
+        topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);       // topics to assign the requests
+
+        for(int i=0;i<numOfRequest;i++) {
             // create metadata for request txn
             MetaData req_metaData = new MetaData();
             req_metaData.setMetaData("Quantity", stardogTest.getQuantity());
@@ -84,6 +87,7 @@ public class BigchainDBJavaDriver {
 //                System.out.println("KEY FOR METADATA --------- " + temp);
                 req_metaData.setMetaData(temp, stardogTest.getRandomValues(temp));
             }
+
             List<String> capability;
             Map<String, String> metaMap= req_metaData.getMetadata();
             List<String> attributes = new ArrayList<>(metaMap.keySet());
@@ -184,13 +188,14 @@ public class BigchainDBJavaDriver {
 //                    }
 //                    capability = rulesDriver.getCapabilities(attributes,metaMap);
 
+
                     //Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id",tx_id);
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);
-
+                    // for each topic in the request, it sends the request to the kafka driver.
                     for(String topic:capability) {
                         kf.runProducer(topic);
                     }
@@ -217,7 +222,7 @@ public class BigchainDBJavaDriver {
      */
     public static void setConfig() {
         BigchainDbConfigBuilder
-                .baseUrl("http://152.46.16.77:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
+                .baseUrl("http://152.46.18.13:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
         //   .addToken("app_id", "ce0575bf")
         //   .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
 
