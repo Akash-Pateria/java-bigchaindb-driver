@@ -22,8 +22,13 @@ public enum Operations {
 	REQUEST_FOR_QUOTE("REQUEST_FOR_QUOTE"),
 	
 	/** The interest. */
-	INTEREST("INTEREST");
-	
+	INTEREST("INTEREST"),
+
+
+	REQUEST_FOR_BID("REQUEST_FOR_BID");
+
+
+
 	/** The value. */
 	private final String value;
 	

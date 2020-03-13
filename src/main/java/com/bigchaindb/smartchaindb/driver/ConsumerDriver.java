@@ -55,17 +55,19 @@ public class ConsumerDriver {
 //    }
 
     static void runConsumer() {
+        // function to create a consumer group which polls at a interval of time and check the record with its capabilities and if matched it simply adds in to RequestList.
+
         Consumer<String, String> consumer = ConsumerCreator.createRequestConsumer();
-        List<String> topicsToSubscribe = Arrays.asList(Capabilities.PLASTIC,Capabilities.MILLING,Capabilities.THREADING);
+        List<String> topicsToSubscribe = Arrays.asList(Capabilities.PLASTIC,Capabilities.MILLING);
         consumer.subscribe(topicsToSubscribe);
 
         HashSet<String> checkTopics = new HashSet<>();
         for(String l:topicsToSubscribe){
             checkTopics.add(l);
         }
-        HashSet<String> checkRequest = new HashSet<>();
+        HashSet<String> checkRequest = new HashSet<>();        // hash set to store the transaction id it has already check.
         AtomicBoolean addRequest = new AtomicBoolean(true);
-        List<JSONObject> RequestList = new ArrayList<>();
+        List<JSONObject> RequestList = new ArrayList<>();       //  List ot store all the request it has completely matched with its capabilities.
         int noMessageFound=0;
         while(true) {
             ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofMillis(1000));
@@ -88,12 +90,12 @@ public class ConsumerDriver {
                 System.out.println("Record offset " + record.offset());
                 JSONObject jsonReq = new JSONObject(record.value());
 
-//                check the id is present in checkRequest
+//                check the transaction id is already present in checkRequest, if so drop or check the capabilities
                 if(!checkRequest.contains(jsonReq.get("Transaction_id"))) {
                     //check all topics are present in checktopics
-//                    System.out.println("Id:" + jsonReq.get("Transaction_id") );
                     JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
 
+                    //System.out.println("Id:" + jsonReq.get("Transaction_id") );
                     for(int i=0;i<reqCapabilities.length();i++) {
                         if (!checkTopics.contains(reqCapabilities.get(i))) {
                             addRequest.set(false);

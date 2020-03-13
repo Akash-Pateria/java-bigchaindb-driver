@@ -3,11 +3,9 @@ package com.bigchaindb.smartchaindb.driver;
 
 import java.io.IOException;
 import java.security.KeyPair;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
+//import org.apache.jena.base.Sys;
 import org.apache.kafka.common.protocol.types.Field;
 import org.json.JSONObject;
 
@@ -40,11 +38,12 @@ public class BigchainDBJavaDriver {
      */
     public static void main(String args[]) throws Exception {
 
+        // Main to create number of requests (Bighain Metadata) and assign topics for those requests and sending it through the kafka.
         BigchainDBJavaDriver examples = new BigchainDBJavaDriver();
 
         //set configuration
         BigchainDBJavaDriver.setConfig();
-
+        int numOfRequest = 50;
         //generate Keys
         KeyPair keys = BigchainDBJavaDriver.getKeys();
 
@@ -67,25 +66,38 @@ public class BigchainDBJavaDriver {
 
         System.out.println("Create txn id: "+ txId_cre );
 
-
         //let the transaction commit in block
         Thread.sleep(500);
 
-        // create metadata for request txn
-        MetaData req_metaData = new MetaData();
-        req_metaData.setMetaData("Part Name/Description", "Phone cover");
-        req_metaData.setMetaData("Quantity", "2000");
-        req_metaData.setMetaData("Material", "PolyCarbonate");
-        req_metaData.setMetaData("Part Volume", "1cu in");
-        req_metaData.setMetaData("Part color", "stock color");
-        req_metaData.setMetaData("Expected Delivery Time", "14days");
-        req_metaData.setMetaData("Manufacturing Process", "Additive Manufacturing");
-        req_metaData.setMetaData("Additional Services", "Protected Packaging");
+        HashMap<String,Integer> topicToIdMap = new HashMap<>();               //hashmap to store the topics and its id's
+        topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);       // topics to assign the requests
 
-        //execute REQUEST transaction
-        String txId_req = examples.doRequest(req_metaData, keys);
+        for(int i=0;i<numOfRequest;i++) {
+            // create metadata for request txn
+            MetaData req_metaData = new MetaData();
+            req_metaData.setMetaData("Quantity", stardogTest.getQuantity());
+            req_metaData.setMetaData("Material", stardogTest.getMaterial());
+//          req_metaData.setMetaData("Machining Function", stardogTest.getMachiningFunction());
 
-        System.out.println("Request txn id: "+ txId_req );
+            //execute REQUEST transaction
+            List<String> randomAtributes = stardogTest.getKeys();
+//            System.out.println(randomAtributes.size());
+            for (int j = 0; j < randomAtributes.size(); j++) {
+                String temp = randomAtributes.get(j);
+//                System.out.println("KEY FOR METADATA --------- " + temp);
+                req_metaData.setMetaData(temp, stardogTest.getRandomValues(temp));
+            }
+
+            List<String> capability;
+            Map<String, String> metaMap= req_metaData.getMetadata();
+            List<String> attributes = new ArrayList<>(metaMap.keySet());
+            capability = rulesDriver.getCapabilities(attributes,metaMap);
+
+
+            String txId_req = examples.doRequest(req_metaData, keys, capability);
+            System.out.println("Request txn id: " + txId_req);
+//            Thread.sleep(15000);
+        }
 
 //----------------------------------------------------------------------------------
         //     System.out.println("(*) Metadata Prepared..");
@@ -137,7 +149,7 @@ public class BigchainDBJavaDriver {
         System.out.println("Transaction failed");
     }
 
-    private GenericCallback handleServerResponse(String operation, MetaData metadata, String tx_id) {
+    private GenericCallback handleServerResponse(String operation, MetaData metadata, String tx_id, List<String> capability) {
         //define callback methods to verify response from BigchainDBServer
         GenericCallback callback = new GenericCallback() {
 
@@ -148,34 +160,42 @@ public class BigchainDBJavaDriver {
 
             public void pushedSuccessfully(Response response) {
                 if(operation.equals("REQUEST_FOR_QUOTE")) {
+
                     Map<String, String> metaMap= metadata.getMetadata();
-                    String material = metaMap.get("Material");
-                    int quantity = Integer.parseInt(metaMap.get("Quantity"));
+//                    String material = metaMap.get("Material");
+//                    int quantity = Integer.parseInt(metaMap.get("Quantity"));
+//                    List<String> attributes = new ArrayList<>(metaMap.keySet());
+//                    for(int i=0;i<attributes.size();i++){
+//                        System.out.println("keys --- "+attributes.get(i));
+//                    }
                     JSONObject js = new JSONObject(metaMap);
-                    List<String> capability = new ArrayList<>();
+//                    List<String> capability;
 
                     //Rules for topic selection
-                    if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
-                        if(quantity < 1000){
-                            capability.add(Capabilities.PRINTING_3D);
-                            capability.add(Capabilities.POCKET_MACHINING);
-                        }
-                        else {
-                            capability.add(Capabilities.PLASTIC);
-                            capability.add(Capabilities.MILLING);
-                            capability.add(Capabilities.THREADING);
-                        }
-                    }
-                    else{
-                        capability.add(Capabilities.MISC);
-                    }
+//                    if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+//                        if(quantity < 1000){
+//                            capability.add(Capabilities.PRINTING_3D);
+//                            capability.add(Capabilities.POCKET_MACHINING);
+//                        }
+//                        else {
+//                            capability.add(Capabilities.PLASTIC);
+//                            capability.add(Capabilities.MILLING);
+//                            capability.add(Capabilities.THREADING);
+//                        }
+//                    }
+//                    else{
+//                        capability.add(Capabilities.MISC);
+//                    }
+//                    capability = rulesDriver.getCapabilities(attributes,metaMap);
+
+
                     //Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id",tx_id);
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);
-
+                    // for each topic in the request, it sends the request to the kafka driver.
                     for(String topic:capability) {
                         kf.runProducer(topic);
                     }
@@ -202,7 +222,7 @@ public class BigchainDBJavaDriver {
      */
     public static void setConfig() {
         BigchainDbConfigBuilder
-                .baseUrl("http://152.46.19.22:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
+                .baseUrl("http://152.46.18.13:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
         //   .addToken("app_id", "ce0575bf")
         //   .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
 
@@ -241,8 +261,9 @@ public class BigchainDBJavaDriver {
                     .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate());
 
             transaction = temp.getTransaction();
-            transaction = temp.sendTransaction(handleServerResponse("CREATE", metaData,transaction.getId()));
-
+            List<String> cap = null;
+            transaction = temp.sendTransaction(handleServerResponse("CREATE", metaData,transaction.getId(), cap));
+//            Thread.sleep(10000);
             System.out.println("(*) CREATE Transaction sent.. - " + transaction.getId());
             return transaction.getId();
 
@@ -295,7 +316,7 @@ public class BigchainDBJavaDriver {
 //
 //    }
 
-    public String doRequest(MetaData metaData, KeyPair keys) throws Exception {
+    public String doRequest(MetaData metaData, KeyPair keys, List<String> capability) throws Exception {
         //Creating empty asset for REQUEST_FOR_QUOTE transaction
         Map<String, String> assetData = new TreeMap<String, String>() {{
             put("", "");
@@ -313,7 +334,7 @@ public class BigchainDBJavaDriver {
 
             transaction = temp.getTransaction();
 //            System.out.println("Id" + transaction.getId());
-            transaction = temp.sendTransaction(handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId()));
+            transaction = temp.sendTransaction(handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(),capability));
 
             System.out.println("(*) REQUEST Transaction sent.. - " + transaction.getId());
             return transaction.getId();
