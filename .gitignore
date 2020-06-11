@@ -27,3 +27,7 @@ target/
 .classpath
 .project
 .settings/
+bin/
+
+# VS Code specific
+.vscode/
