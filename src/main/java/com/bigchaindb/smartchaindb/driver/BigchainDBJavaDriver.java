@@ -1,18 +1,15 @@
 package com.bigchaindb.smartchaindb.driver;
 
-
 import java.io.IOException;
 import java.security.KeyPair;
 import java.util.*;
 
 //import org.apache.jena.base.Sys;
-import org.apache.kafka.common.protocol.types.Field;
 import org.json.JSONObject;
 
 import com.bigchaindb.builders.BigchainDbConfigBuilder;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.Operations;
-import com.bigchaindb.model.FulFill;
 import com.bigchaindb.model.GenericCallback;
 import com.bigchaindb.model.MetaData;
 import com.bigchaindb.model.Transaction;
@@ -23,8 +20,10 @@ import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import okhttp3.Response;
 
 /**
- * simple usage of BigchainDB Java driver (https://github.com/bigchaindb/java-bigchaindb-driver)
- * to create TXs on BigchainDB network
+ * simple usage of BigchainDB Java driver
+ * (https://github.com/bigchaindb/java-bigchaindb-driver) to create TXs on
+ * BigchainDB network
+ * 
  * @author dev@bigchaindb.com
  *
  */
@@ -32,13 +31,15 @@ public class BigchainDBJavaDriver {
 
     /**
      * main method
+     * 
      * @param args
      * @throws IOException
      * @throws InterruptedException
      */
     public static void main(String args[]) throws Exception {
 
-        // Main to create number of requests (Bighain Metadata) and assign topics for those requests and sending it through the kafka.
+        // Main to create number of requests (Bighain Metadata) and assign topics for
+        // those requests and sending it through the kafka.
         BigchainDBJavaDriver examples = new BigchainDBJavaDriver();
 
         //set configuration
@@ -99,58 +100,64 @@ public class BigchainDBJavaDriver {
 //            Thread.sleep(15000);
         }
 
-//----------------------------------------------------------------------------------
-        //     System.out.println("(*) Metadata Prepared..");
-        //   System.out.println("(*) Assets Prepared..");
-        //let the transaction commit in block
-        //   Thread.sleep(500);
-        //execute INTEREST transaction
-        //String txId_int = examples.doInterest(txId_cre, req_metaData, keys);
+        // ----------------------------------------------------------------------------------
+        // System.out.println("(*) Metadata Prepared..");
+        // System.out.println("(*) Assets Prepared..");
+        // let the transaction commit in block
+        // Thread.sleep(500);
+        // execute INTEREST transaction
+        // String txId_int = examples.doInterest(txId_cre, req_metaData, keys);
 
-        //System.out.println("Interest txn id: "+ txId_int );
+        // System.out.println("Interest txn id: "+ txId_int );
 
-//        Map<String, String> assetData1 = new TreeMap<String, String>() {{
-//            put("", "");
-//        }};
-//
-//        Map<String, String> assetData2 = new TreeMap<String, String>() {{
-//            put("name", "Punnag");
-//            put("age", "doesn't matter");
-//            put("purpose", "masters student");
-//        }};
-//
-//        MetaData metaData1 = new MetaData();
-//        metaData1.setMetaData("where is she now?", "Raleigh");
-//
-//        MetaData metaData2 = new MetaData();
-//        metaData2.setMetaData("where is she now?", "Raleigh");
+        // Map<String, String> assetData1 = new TreeMap<String, String>() {{
+        // put("", "");
+        // }};
+        //
+        // Map<String, String> assetData2 = new TreeMap<String, String>() {{
+        // put("name", "Punnag");
+        // put("age", "doesn't matter");
+        // put("purpose", "masters student");
+        // }};
+        //
+        // MetaData metaData1 = new MetaData();
+        // metaData1.setMetaData("where is she now?", "Raleigh");
+        //
+        // MetaData metaData2 = new MetaData();
+        // metaData2.setMetaData("where is she now?", "Raleigh");
 
-//        String txId1 = examples.doCreate(assetData1, metaData1, keys);
-//        String txId2 = examples.doCreate(assetData2, metaData2, keys);
+        // String txId1 = examples.doCreate(assetData1, metaData1, keys);
+        // String txId2 = examples.doCreate(assetData2, metaData2, keys);
 
-        //create transfer metadata
-//        MetaData transferMetadata = new MetaData();
-//        transferMetadata.setMetaData("type", "Trial transfer");
-//        System.out.println("(*) Transfer Metadata Prepared..");
-//        //execute TRANSFER transaction on the CREATED asset
-//        examples.doTransfer(txId_cre, transferMetadata, keys);
-        //       String txId_req = examples.doRequest(req_metaData, keys);
-//--------------------------------------------------------------------------------------
+        // create transfer metadata
+        // MetaData transferMetadata = new MetaData();
+        // transferMetadata.setMetaData("type", "Trial transfer");
+        // System.out.println("(*) Transfer Metadata Prepared..");
+        // //execute TRANSFER transaction on the CREATED asset
+        // examples.doTransfer(txId_cre, transferMetadata, keys);
+        // String txId_req = examples.doRequest(req_metaData, keys);
+        // --------------------------------------------------------------------------------------
 
+
+        // rulesDriver.reasoning();
+        // rulesDriver.getCapabilityTopic("Moulding");
+
+        DBConnectionPool.destroyConnectionPool();
     }
 
     private void onSuccess(Response response) {
-        //TODO : Add your logic here with response from server
+        // TODO : Add your logic here with response from server
         System.out.println("Transaction posted successfully");
     }
 
     private void onFailure() {
-        //TODO : Add your logic here
+        // TODO : Add your logic here
         System.out.println("Transaction failed");
     }
 
-    private GenericCallback handleServerResponse(String operation, MetaData metadata, String tx_id, List<String> capability) {
-        //define callback methods to verify response from BigchainDBServer
+    private GenericCallback handleServerResponse(String operation, MetaData metadata, String tx_id,
+            List<String> capability) {
+        // define callback methods to verify response from BigchainDBServer
         GenericCallback callback = new GenericCallback() {
 
             public void transactionMalformed(Response response) {
@@ -159,51 +166,50 @@ public class BigchainDBJavaDriver {
             }
 
             public void pushedSuccessfully(Response response) {
-                if(operation.equals("REQUEST_FOR_QUOTE")) {
+                if (operation.equals("REQUEST_FOR_QUOTE")) {
 
-                    Map<String, String> metaMap= metadata.getMetadata();
-//                    String material = metaMap.get("Material");
-//                    int quantity = Integer.parseInt(metaMap.get("Quantity"));
-//                    List<String> attributes = new ArrayList<>(metaMap.keySet());
-//                    for(int i=0;i<attributes.size();i++){
-//                        System.out.println("keys --- "+attributes.get(i));
-//                    }
+                    Map<String, String> metaMap = metadata.getMetadata();
+                    // String material = metaMap.get("Material");
+                    // int quantity = Integer.parseInt(metaMap.get("Quantity"));
+                    // List<String> attributes = new ArrayList<>(metaMap.keySet());
+                    // for(int i=0;i<attributes.size();i++){
+                    // System.out.println("keys --- "+attributes.get(i));
+                    // }
                     JSONObject js = new JSONObject(metaMap);
-//                    List<String> capability;
+                    // List<String> capability;
 
-                    //Rules for topic selection
-//                    if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
-//                        if(quantity < 1000){
-//                            capability.add(Capabilities.PRINTING_3D);
-//                            capability.add(Capabilities.POCKET_MACHINING);
-//                        }
-//                        else {
-//                            capability.add(Capabilities.PLASTIC);
-//                            capability.add(Capabilities.MILLING);
-//                            capability.add(Capabilities.THREADING);
-//                        }
-//                    }
-//                    else{
-//                        capability.add(Capabilities.MISC);
-//                    }
-//                    capability = rulesDriver.getCapabilities(attributes,metaMap);
+                    // Rules for topic selection
+                    // if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
+                    // if(quantity < 1000){
+                    // capability.add(Capabilities.PRINTING_3D);
+                    // capability.add(Capabilities.POCKET_MACHINING);
+                    // }
+                    // else {
+                    // capability.add(Capabilities.PLASTIC);
+                    // capability.add(Capabilities.MILLING);
+                    // capability.add(Capabilities.THREADING);
+                    // }
+                    // }
+                    // else{
+                    // capability.add(Capabilities.MISC);
+                    // }
+                    // capability = rulesDriver.getCapabilities(attributes,metaMap);
 
-
-                    //Need to tag each capability with an integer.
+                    // Need to tag each capability with an integer.
                     js.put("Capability", capability);
-                    js.put("Transaction_id",tx_id);
+                    js.put("Transaction_id", tx_id);
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);
                     // for each topic in the request, it sends the request to the kafka driver.
-                    for(String topic:capability) {
+                    for (String topic : capability) {
                         kf.runProducer(topic);
                     }
 
                     System.out.println("Producer run complete");
 
                 }
-                System.out.println(operation +" transaction pushed Successfully");
+                System.out.println(operation + " transaction pushed Successfully");
                 onSuccess(response);
             }
 
@@ -216,23 +222,25 @@ public class BigchainDBJavaDriver {
         return callback;
     }
 
-
     /**
      * configures connection url and credentials
      */
     public static void setConfig() {
-        BigchainDbConfigBuilder
-                .baseUrl("http://152.46.18.13:9984/").setup(); //or use http://testnet.bigchaindb.com or https://test.bigchaindb.com/ for testnet
-        //   .addToken("app_id", "ce0575bf")
-        //   .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
+        BigchainDbConfigBuilder.baseUrl("http://152.46.18.13:9984/").setup(); // or use http://testnet.bigchaindb.com or
+                                                                              // https://test.bigchaindb.com/ for
+                                                                              // testnet
+        // .addToken("app_id", "ce0575bf")
+        // .addToken("app_key", "f45db167dd8ea3cf565b1d5f9cf6fa48").setup();
 
     }
+
     /**
      * generates EdDSA keypair to sign and verify transactions
+     * 
      * @return KeyPair
      */
     public static KeyPair getKeys() {
-        //  prepare your keys
+        // prepare your keys
         net.i2p.crypto.eddsa.KeyPairGenerator edDsaKpg = new net.i2p.crypto.eddsa.KeyPairGenerator();
         KeyPair abhisha = edDsaKpg.generateKeyPair();
         System.out.println("(*) Keys Generated..");
@@ -242,28 +250,26 @@ public class BigchainDBJavaDriver {
 
     /**
      * performs CREATE transactions on BigchainDB network
+     * 
      * @param assetData data to store as asset
-     * @param metaData data to store as metadata
-     * @param keys keys to sign and verify transaction
+     * @param metaData  data to store as metadata
+     * @param keys      keys to sign and verify transaction
      * @return id of CREATED asset
      */
     public String doCreate(Map<String, String> assetData, MetaData metaData, KeyPair keys) throws Exception {
 
         try {
-            //build and send CREATE transaction
+            // build and send CREATE transaction
             Transaction transaction = null;
 
-            BigchainDbTransactionBuilder.IBuild temp = BigchainDbTransactionBuilder
-                    .init()
-                    .addAssets(assetData, TreeMap.class)
-                    .addMetaData(metaData)
-                    .operation(Operations.CREATE)
+            BigchainDbTransactionBuilder.IBuild temp = BigchainDbTransactionBuilder.init()
+                    .addAssets(assetData, TreeMap.class).addMetaData(metaData).operation(Operations.CREATE)
                     .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate());
 
             transaction = temp.getTransaction();
             List<String> cap = null;
-            transaction = temp.sendTransaction(handleServerResponse("CREATE", metaData,transaction.getId(), cap));
-//            Thread.sleep(10000);
+            transaction = temp.sendTransaction(handleServerResponse("CREATE", metaData, transaction.getId(), cap));
+            // Thread.sleep(10000);
             System.out.println("(*) CREATE Transaction sent.. - " + transaction.getId());
             return transaction.getId();
 
@@ -275,66 +281,69 @@ public class BigchainDBJavaDriver {
         return null;
     }
 
-//    /**
-//     * performs TRANSFER operations on CREATED assets
-//     * @param txId id of transaction/asset
-//     * @param metaData data to append for this transaction
-//     * @param keys keys to sign and verify transactions
-//     */
-//    public void doTransfer(String txId, MetaData metaData, KeyPair keys) throws Exception {
-//
-//        Map<String, String> assetData = new TreeMap<String, String>();
-//        assetData.put("id", txId);
-//
-//        try {
-//
-//
-//            //which transaction you want to fulfill?
-//            FulFill fulfill = new FulFill();
-//            fulfill.setOutputIndex(0);
-//            fulfill.setTransactionId(txId);
-//
-//
-//            //build and send TRANSFER transaction
-//            Transaction transaction = BigchainDbTransactionBuilder
-//                    .init()
-//                    .addInput(null, fulfill, (EdDSAPublicKey) keys.getPublic())
-//                    .addOutput("1", (EdDSAPublicKey) keys.getPublic())
-//                    .addAssets(txId, String.class)
-//                    .addMetaData(metaData)
-//                    .operation(Operations.TRANSFER)
-//                    .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate())
-//                    .sendTransaction(handleServerResponse("TRANSFER", metaData));
-//
-//            System.out.println("(*) TRANSFER Transaction sent.. - " + transaction.getId());
-//
-//
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//
-//    }
+    // /**
+    // * performs TRANSFER operations on CREATED assets
+    // * @param txId id of transaction/asset
+    // * @param metaData data to append for this transaction
+    // * @param keys keys to sign and verify transactions
+    // */
+    // public void doTransfer(String txId, MetaData metaData, KeyPair keys) throws
+    // Exception {
+    //
+    // Map<String, String> assetData = new TreeMap<String, String>();
+    // assetData.put("id", txId);
+    //
+    // try {
+    //
+    //
+    // //which transaction you want to fulfill?
+    // FulFill fulfill = new FulFill();
+    // fulfill.setOutputIndex(0);
+    // fulfill.setTransactionId(txId);
+    //
+    //
+    // //build and send TRANSFER transaction
+    // Transaction transaction = BigchainDbTransactionBuilder
+    // .init()
+    // .addInput(null, fulfill, (EdDSAPublicKey) keys.getPublic())
+    // .addOutput("1", (EdDSAPublicKey) keys.getPublic())
+    // .addAssets(txId, String.class)
+    // .addMetaData(metaData)
+    // .operation(Operations.TRANSFER)
+    // .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey)
+    // keys.getPrivate())
+    // .sendTransaction(handleServerResponse("TRANSFER", metaData));
+    //
+    // System.out.println("(*) TRANSFER Transaction sent.. - " +
+    // transaction.getId());
+    //
+    //
+    // } catch (IOException e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    //
+    // }
 
     public String doRequest(MetaData metaData, KeyPair keys, List<String> capability) throws Exception {
-        //Creating empty asset for REQUEST_FOR_QUOTE transaction
-        Map<String, String> assetData = new TreeMap<String, String>() {{
-            put("", "");
-        }};
+        // Creating empty asset for REQUEST_FOR_QUOTE transaction
+        Map<String, String> assetData = new TreeMap<String, String>() {
+            {
+                put("", "");
+            }
+        };
 
         try {
-            //build and send REQUEST transaction
+            // build and send REQUEST transaction
             Transaction transaction = null;
-            BigchainDbTransactionBuilder.IBuild temp = BigchainDbTransactionBuilder
-                                .init()
-                                .addAssets(assetData, TreeMap.class)
-                                .addMetaData(metaData)
-                                .operation(Operations.REQUEST_FOR_QUOTE)
-                                .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate());
+            BigchainDbTransactionBuilder.IBuild temp = BigchainDbTransactionBuilder.init()
+                    .addAssets(assetData, TreeMap.class).addMetaData(metaData).operation(Operations.REQUEST_FOR_QUOTE)
+                    .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate());
 
             transaction = temp.getTransaction();
-//            System.out.println("Id" + transaction.getId());
-            transaction = temp.sendTransaction(handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(),capability));
+            // System.out.println("Id" + transaction.getId());
+            transaction = temp.sendTransaction(
+                    handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(), capability));
 
             System.out.println("(*) REQUEST Transaction sent.. - " + transaction.getId());
             return transaction.getId();
@@ -346,32 +355,35 @@ public class BigchainDBJavaDriver {
 
         return null;
     }
-//
-//    public String doInterest(String txId, MetaData metaData, KeyPair keys) throws Exception {
-//
-//    	Map<String, String> assetData = new TreeMap<String, String>();
-//        assetData.put("id", txId);
-//
-//        try {
-//        //build and send REQUEST transaction
-//        Transaction transaction = null;
-//
-//             transaction = BigchainDbTransactionBuilder
-//                    .init()
-//                    .addAssets(assetData, TreeMap.class)
-//                    .addMetaData(metaData)
-//                    .operation(Operations.INTEREST)
-//                    .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate())
-//                    .sendTransaction(handleServerResponse("INTEREST", metaData));
-//
-//            System.out.println("(*) INTEREST Transaction sent.. - " + transaction.getId());
-//            return transaction.getId();
-//
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//
-//        return null;
-//    }
+
+    // public String doInterest(String txId, MetaData metaData, KeyPair keys) throws
+    // Exception {
+    //
+    // Map<String, String> assetData = new TreeMap<String, String>();
+    // assetData.put("id", txId);
+    //
+    // try {
+    // //build and send REQUEST transaction
+    // Transaction transaction = null;
+    //
+    // transaction = BigchainDbTransactionBuilder
+    // .init()
+    // .addAssets(assetData, TreeMap.class)
+    // .addMetaData(metaData)
+    // .operation(Operations.INTEREST)
+    // .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey)
+    // keys.getPrivate())
+    // .sendTransaction(handleServerResponse("INTEREST", metaData));
+    //
+    // System.out.println("(*) INTEREST Transaction sent.. - " +
+    // transaction.getId());
+    // return transaction.getId();
+    //
+    // } catch (IOException e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    //
+    // return null;
+    // }
 }
