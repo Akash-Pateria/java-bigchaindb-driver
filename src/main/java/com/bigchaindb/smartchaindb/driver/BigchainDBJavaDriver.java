@@ -42,107 +42,94 @@ public class BigchainDBJavaDriver {
         // those requests and sending it through the kafka.
         BigchainDBJavaDriver examples = new BigchainDBJavaDriver();
 
-        //set configuration
+        // set configuration
         BigchainDBJavaDriver.setConfig();
-        int numOfRequest = 50;
-        //generate Keys
+        // generate Keys
         KeyPair keys = BigchainDBJavaDriver.getKeys();
 
         System.out.println(Base58.encode(keys.getPublic().getEncoded()));
         System.out.println(Base58.encode(keys.getPrivate().getEncoded()));
 
         // create New asset for create txn
-        Map<String, String> cre_assetData = new TreeMap<String, String>() {{
-            put("name", "ABC Manufacturer");
-            put("capability", "Plastic Machining");
-            put("capacity", "1000");
-        }};
+        Map<String, String> cre_assetData = new TreeMap<String, String>() {
+            {
+                put("name", "ABC Manufacturer");
+                put("capability", "Plastic Machining");
+                put("capacity", "10000000");
+            }
+        };
 
         // create metadata for create txn
         MetaData cre_metaData = new MetaData();
         cre_metaData.setMetaData("about", "ABC plastic manufacturing company");
 
-        //execute CREATE transaction
-        String txId_cre = examples.doCreate(cre_assetData, cre_metaData, keys);
+        // execute CREATE transaction
+        examples.doCreate(cre_assetData, cre_metaData, keys);
 
-        System.out.println("Create txn id: "+ txId_cre );
-
-        //let the transaction commit in block
+        // let the transaction commit in block
         Thread.sleep(500);
 
-        HashMap<String,Integer> topicToIdMap = new HashMap<>();               //hashmap to store the topics and its id's
-        topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);       // topics to assign the requests
+        // hashmap to store the topics and its id's
+        HashMap<String, Integer> topicToIdMap = new HashMap<>();
+        // topics to assign the requests
+        topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        for(int i=0;i<numOfRequest;i++) {
+        int numOfRequest = 50;
+        for (int i = 0; i < numOfRequest; i++) {
+            System.out.println("\n\nProcessing request#" + (i + 1));
             // create metadata for request txn
             MetaData req_metaData = new MetaData();
-            req_metaData.setMetaData("Quantity", stardogTest.getQuantity());
-            req_metaData.setMetaData("Material", stardogTest.getMaterial());
-//          req_metaData.setMetaData("Machining Function", stardogTest.getMachiningFunction());
+            req_metaData.setMetaData("Quantity", StardogTest.getQuantity());
+            req_metaData.setMetaData("Material", StardogTest.getMaterial());
 
-            //execute REQUEST transaction
-            List<String> randomAtributes = stardogTest.getKeys();
-//            System.out.println(randomAtributes.size());
+            // execute REQUEST transaction
+            List<String> randomAtributes = StardogTest.getKeys();
             for (int j = 0; j < randomAtributes.size(); j++) {
                 String temp = randomAtributes.get(j);
-//                System.out.println("KEY FOR METADATA --------- " + temp);
-                req_metaData.setMetaData(temp, stardogTest.getRandomValues(temp));
+                req_metaData.setMetaData(temp, StardogTest.getRandomValues(temp));
             }
 
             List<String> capability;
-            Map<String, String> metaMap= req_metaData.getMetadata();
+            Map<String, String> metaMap = req_metaData.getMetadata();
             List<String> attributes = new ArrayList<>(metaMap.keySet());
-            capability = rulesDriver.getCapabilities(attributes,metaMap);
+            capability = RulesDriver.getCapabilities(attributes, metaMap);
 
-
-            String txId_req = examples.doRequest(req_metaData, keys, capability);
-            System.out.println("Request txn id: " + txId_req);
-//            Thread.sleep(15000);
+            examples.doRequest(req_metaData, keys, capability);
+            Thread.sleep(2000);
         }
 
-        // ----------------------------------------------------------------------------------
-        // System.out.println("(*) Metadata Prepared..");
-        // System.out.println("(*) Assets Prepared..");
-        // let the transaction commit in block
-        // Thread.sleep(500);
-        // execute INTEREST transaction
-        // String txId_int = examples.doInterest(txId_cre, req_metaData, keys);
-
-        // System.out.println("Interest txn id: "+ txId_int );
-
-        // Map<String, String> assetData1 = new TreeMap<String, String>() {{
-        // put("", "");
-        // }};
-        //
-        // Map<String, String> assetData2 = new TreeMap<String, String>() {{
-        // put("name", "Punnag");
-        // put("age", "doesn't matter");
-        // put("purpose", "masters student");
-        // }};
-        //
-        // MetaData metaData1 = new MetaData();
-        // metaData1.setMetaData("where is she now?", "Raleigh");
-        //
-        // MetaData metaData2 = new MetaData();
-        // metaData2.setMetaData("where is she now?", "Raleigh");
-
-        // String txId1 = examples.doCreate(assetData1, metaData1, keys);
-        // String txId2 = examples.doCreate(assetData2, metaData2, keys);
-
-        // create transfer metadata
-        // MetaData transferMetadata = new MetaData();
-        // transferMetadata.setMetaData("type", "Trial transfer");
-        // System.out.println("(*) Transfer Metadata Prepared..");
-        // //execute TRANSFER transaction on the CREATED asset
-        // examples.doTransfer(txId_cre, transferMetadata, keys);
-        // String txId_req = examples.doRequest(req_metaData, keys);
-        // --------------------------------------------------------------------------------------
-
-
-        // rulesDriver.reasoning();
-        // rulesDriver.getCapabilityTopic("Moulding");
-
+        // simulateExecution(examples, keys);
         DBConnectionPool.destroyConnectionPool();
+    }
+
+    private static void simulateExecution(BigchainDBJavaDriver driver, KeyPair keys) throws Exception {
+        int maxProductCountInRequest = 3;
+        Random random = new Random();
+
+        MetaData req_metaData = new MetaData();
+        req_metaData.setMetaData("Material", "SiliconCarbide");
+        req_metaData.setMetaData("ODCutOffSolid", "name");
+        req_metaData.setMetaData("GeneralClosedPocket", "minRadiusInConcaveCorner");
+        req_metaData.setMetaData("Workpiece", "Seat");
+
+        for (;;) {
+            int productCount = random.nextInt(maxProductCountInRequest) + 1;
+            List<String> capabilityTopics = new ArrayList<>();
+
+            for (int i = 0; i < productCount; i++) {
+                List<String> capabilities = StardogTest.getRandomCapability();
+
+                for (String capability : capabilities) {
+                    capabilityTopics.add(StardogTest.getCapabilityTopic(capability));
+                }
+            }
+
+            req_metaData.setMetaData("Quantity", Integer.toString(random.nextInt(10000)));
+
+            driver.doRequest(req_metaData, keys, capabilityTopics);
+            System.out.println("\n");
+            Thread.sleep(1500);
+        }
     }
 
     private void onSuccess(Response response) {
@@ -205,12 +192,10 @@ public class BigchainDBJavaDriver {
                     for (String topic : capability) {
                         kf.runProducer(topic);
                     }
-
-                    System.out.println("Producer run complete");
-
+                    // System.out.println("Producer run complete");
                 }
-                System.out.println(operation + " transaction pushed Successfully");
-                onSuccess(response);
+                // System.out.println(operation + " transaction pushed Successfully");
+                // onSuccess(response);
             }
 
             public void otherError(Response response) {

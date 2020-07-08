@@ -4,6 +4,7 @@ import com.complexible.stardog.StardogException;
 import com.complexible.stardog.api.*;
 import com.stardog.stark.query.SelectQueryResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CoordinatorDriver {

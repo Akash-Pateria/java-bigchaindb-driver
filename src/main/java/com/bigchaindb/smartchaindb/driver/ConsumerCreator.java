@@ -9,12 +9,12 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 //import com.gaurav.kafka.constants.IKafkaConstants;
 public class ConsumerCreator {
-    public static Consumer<String, String> createRequestConsumer() {
+    public static Consumer<String, String> createRequestConsumer(String consumerGroup) {
         Properties props = new Properties();
         // The Kafka broker's address eg: localhost:9091
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, IKafkaConstants.KAFKA_BROKERS);
         // consumer group id
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, IKafkaConstants.GROUP_ID_CONFIG);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         // Serializer for the key of the message - need to decide what will be the key
         // for rfq txn
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());

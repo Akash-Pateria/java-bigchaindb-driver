@@ -15,20 +15,19 @@ public class KafkaDriver {
 
 	public KafkaDriver(String req) {
 		this.req = req;
-
 	}
 
 	public void runProducer(String topic) {
 		Producer<String, String> producer = ProducerCreator.createRequestProducer();
 
-		System.out.println("Final request: " + req);
+		// System.out.println("Final request: " + req);
 
 		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, req);
 		try {
 			RecordMetadata metadata = producer.send(record).get();
 
-			System.out
-					.println("Record sent to partition " + metadata.partition() + " with offset " + metadata.offset());
+			System.out.println("Record sent to topic " + topic + " at partition " + metadata.partition()
+					+ " with offset " + metadata.offset());
 		} catch (ExecutionException e) {
 			System.out.println("Error in sending record");
 			System.out.println(e);
