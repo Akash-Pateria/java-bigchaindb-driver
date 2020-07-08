@@ -19,10 +19,11 @@ public class DBConnectionPool {
         try (AdminConnection connection = AdminConnectionConfiguration.toServer(StardogConstants.SERVER)
                 .credentials(StardogConstants.ADMIN_USERNAME, StardogConstants.ADMIN_PASSWORD).connect()) {
 
-            if (connection.list().contains(StardogConstants.DB_NAME)) {
-                connection.drop(StardogConstants.DB_NAME);
+            if (!connection.list().contains(StardogConstants.DB_NAME)) {
+                // connection.drop(StardogConstants.DB_NAME);
+                connection.disk(StardogConstants.DB_NAME).create();
+                importOntology();
             }
-            connection.disk(StardogConstants.DB_NAME).create();
             connection.close();
 
             ConnectionConfiguration connectionConfig = ConnectionConfiguration.to(StardogConstants.DB_NAME)
@@ -32,8 +33,6 @@ public class DBConnectionPool {
             ConnectionPoolConfig PoolConfig = ConnectionPoolConfig.using(connectionConfig).minPool(10).maxPool(200)
                     .expiration(300, TimeUnit.SECONDS).blockAtCapacity(900, TimeUnit.SECONDS);
             poolInstance = PoolConfig.create();
-
-            importOntology();
         }
         return poolInstance;
     }

@@ -95,7 +95,7 @@ public class BigchainDBJavaDriver {
             capability = RulesDriver.getCapabilities(attributes, metaMap);
 
             examples.doRequest(req_metaData, keys, capability);
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         }
 
         // simulateExecution(examples, keys);
@@ -128,7 +128,7 @@ public class BigchainDBJavaDriver {
 
             driver.doRequest(req_metaData, keys, capabilityTopics);
             System.out.println("\n");
-            Thread.sleep(1500);
+            Thread.sleep(5000);
         }
     }
 

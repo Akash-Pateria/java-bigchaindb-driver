@@ -71,6 +71,7 @@ public class RulesDriver {
                     int index = rand.nextInt(topics.size());
                     capSet.add(topics.get(index));
                 }
+
                 capability.addAll(capSet);
                 break;
             }
