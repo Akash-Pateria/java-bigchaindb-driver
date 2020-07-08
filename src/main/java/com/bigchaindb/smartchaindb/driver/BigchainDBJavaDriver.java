@@ -211,7 +211,7 @@ public class BigchainDBJavaDriver {
      * configures connection url and credentials
      */
     public static void setConfig() {
-        BigchainDbConfigBuilder.baseUrl("http://152.46.18.13:9984/").setup(); // or use http://testnet.bigchaindb.com or
+        BigchainDbConfigBuilder.baseUrl("http://152.46.17.69:9984/").setup(); // or use http://testnet.bigchaindb.com or
                                                                               // https://test.bigchaindb.com/ for
                                                                               // testnet
         // .addToken("app_id", "ce0575bf")
