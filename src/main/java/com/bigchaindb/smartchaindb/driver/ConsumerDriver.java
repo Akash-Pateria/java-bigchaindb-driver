@@ -98,12 +98,18 @@ public class ConsumerDriver {
         }
 
         private void writeToLog(BufferedWriter writer, final JSONObject jsonReq) {
-            final LocalDateTime now = LocalDateTime.now();
-            final LocalDateTime creationDateTime = LocalDateTime
-                    .parse(jsonReq.get("requestCreationTimestamp").toString());
-            final LocalDateTime kafkaInTimestamp = LocalDateTime.parse(jsonReq.get("kafkaInTimestamp").toString());
-            final long timeDifferenceInMillis = Duration.between(creationDateTime, now).toMillis();
+            LocalDateTime now = LocalDateTime.now(), creationDateTime = LocalDateTime.now(),
+                    kafkaInTimestamp = LocalDateTime.now();
 
+            if (jsonReq.has("requestCreationTimestamp")) {
+                creationDateTime = LocalDateTime.parse(jsonReq.getString("requestCreationTimestamp"));
+            }
+
+            if (jsonReq.has("kafkaInTimestamp")) {
+                kafkaInTimestamp = LocalDateTime.parse(jsonReq.getString("kafkaInTimestamp"));
+            }
+
+            final long timeDifferenceInMillis = Duration.between(creationDateTime, now).toMillis();
             try {
                 writer.write(
                         creationDateTime + "," + kafkaInTimestamp + "," + now + "," + timeDifferenceInMillis + "\n");
@@ -114,20 +120,23 @@ public class ConsumerDriver {
 
         private void checkRequest(final HashSet<String> checkTopics, final AtomicBoolean addRequest,
                 final JSONObject jsonReq) {
-            final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
+            if (jsonReq.has("Capability") && jsonReq.has("Transaction_id")) {
+                final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
 
-            for (int i = 0; i < reqCapabilities.length(); i++) {
-                if (!checkTopics.contains(reqCapabilities.get(i))) {
-                    addRequest.set(false);
-                    break;
+                for (int i = 0; i < reqCapabilities.length(); i++) {
+                    if (!checkTopics.contains(reqCapabilities.get(i))) {
+                        addRequest.set(false);
+                        break;
+                    }
+                }
+
+                final boolean flag = addRequest.get();
+                if (flag == true) {
+                    processedRequests.add((String) jsonReq.get("Transaction_id"));
+                    RequestList.add(jsonReq);
                 }
             }
 
-            final boolean flag = addRequest.get();
-            if (flag == true) {
-                processedRequests.add((String) jsonReq.get("Transaction_id"));
-                RequestList.add(jsonReq);
-            }
         }
     }
 }
