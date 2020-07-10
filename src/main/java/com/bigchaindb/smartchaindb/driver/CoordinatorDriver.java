@@ -49,6 +49,6 @@ public class CoordinatorDriver {
 
     static void addManufacture() {
         // function to create a consumer group manufacturers in Kafka
-        ConsumerDriver.runConsumer();
+        // ConsumerDriver.runConsumer();
     }
 }
