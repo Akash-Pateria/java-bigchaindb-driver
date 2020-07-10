@@ -53,27 +53,21 @@ public class ConsumerDriver {
 
         @Override
         public void run() {
-            int noMessageFound = 0;
             final HashSet<String> checkTopics = new HashSet<String>(subscribedTopics);
 
-            try {
-                final AtomicBoolean addRequest = new AtomicBoolean(true);
-                BufferedWriter writer = new BufferedWriter(
-                        new FileWriter(Thread.currentThread().getName() + ".txt", true));
+            try (BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(Thread.currentThread().getName() + ".txt", true))) {
 
+                final AtomicBoolean addRequest = new AtomicBoolean(true);
                 consumer.subscribe(subscribedTopics);
 
                 while (true) {
-                    final ConsumerRecords<String, String> consumerRecords = consumer.poll(Duration.ofMillis(1000));
-
-                    if (consumerRecords.count() == 0) {
-                        noMessageFound++;
-                        if (noMessageFound > IKafkaConstants.MAX_NO_MESSAGE_FOUND_COUNT) {
-                            break;
-                        } else {
-                            continue;
-                        }
-                    }
+                    final ConsumerRecords<String, String> consumerRecords = consumer
+                            .poll(Duration.ofMillis(Long.MAX_VALUE));
+                    /*
+                     * if (consumerRecords.count() == 0) { noMessageFound++; if (noMessageFound >
+                     * IKafkaConstants.MAX_NO_MESSAGE_FOUND_COUNT) { break; } else { continue; } }
+                     */
 
                     consumerRecords.forEach(record -> {
                         System.out.println("\nRecord: " + record.value());
@@ -88,8 +82,6 @@ public class ConsumerDriver {
 
                     consumer.commitAsync();
                 }
-
-                writer.close();
             } catch (final Exception e) {
                 e.printStackTrace();
             } finally {
