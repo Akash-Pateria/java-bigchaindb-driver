@@ -323,13 +323,13 @@ public class BigchainDBJavaDriver {
         try {
             // build and send REQUEST transaction
             Transaction transaction = null;
+            metaData.setMetaData("requestCreationTimestamp", LocalDateTime.now().toString());
             BigchainDbTransactionBuilder.IBuild temp = BigchainDbTransactionBuilder.init()
                     .addAssets(assetData, TreeMap.class).addMetaData(metaData).operation(Operations.REQUEST_FOR_QUOTE)
                     .buildAndSign((EdDSAPublicKey) keys.getPublic(), (EdDSAPrivateKey) keys.getPrivate());
 
             transaction = temp.getTransaction();
             // System.out.println("Id" + transaction.getId());
-            metaData.setMetaData("requestCreationTimestamp", LocalDateTime.now().toString());
             transaction = temp.sendTransaction(
                     handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(), capability));
 
