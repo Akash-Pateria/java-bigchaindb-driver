@@ -1,5 +1,6 @@
 package com.bigchaindb.smartchaindb.driver;
 
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.kafka.clients.producer.Producer;
@@ -17,7 +18,8 @@ public class KafkaDriver {
 
 	public void runProducer(String topic) {
 		if (producer == null) {
-			producer = ProducerCreator.createRequestProducer();
+			Random rand = new Random();
+			producer = ProducerCreator.createRequestProducer("requestor" + rand.nextInt(10));
 		}
 
 		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, req);

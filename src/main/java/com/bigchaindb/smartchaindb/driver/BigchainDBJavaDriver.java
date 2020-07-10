@@ -186,7 +186,7 @@ public class BigchainDBJavaDriver {
                     // Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id", tx_id);
-                    js.put("timestamp", LocalDateTime.now());
+                    js.put("kafkaInTimestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);
@@ -329,6 +329,7 @@ public class BigchainDBJavaDriver {
 
             transaction = temp.getTransaction();
             // System.out.println("Id" + transaction.getId());
+            metaData.setMetaData("requestCreationTimestamp", LocalDateTime.now().toString());
             transaction = temp.sendTransaction(
                     handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(), capability));
 
