@@ -76,7 +76,7 @@ public class ConsumerDriver {
 
                     // print each record.
                     consumerRecords.forEach(record -> {
-                        System.out.println("Record value: " + record.value());
+                        System.out.println("\nRecord: " + record.value());
                         JSONObject jsonReq = new JSONObject(record.value());
 
                         LocalDateTime creationDateTime = LocalDateTime.parse(jsonReq.get("timestamp").toString());

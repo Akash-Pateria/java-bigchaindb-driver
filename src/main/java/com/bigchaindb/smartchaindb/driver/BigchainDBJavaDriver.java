@@ -75,7 +75,7 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        int numOfRequest = 250;
+        int numOfRequest = 50;
         for (int i = 0; i < numOfRequest; i++) {
             System.out.println("\n\nProcessing request#" + (i + 1));
             // create metadata for request txn
