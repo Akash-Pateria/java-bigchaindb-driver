@@ -68,7 +68,7 @@ public class BigchainDBJavaDriver {
         examples.doCreate(cre_assetData, cre_metaData, keys);
 
         // let the transaction commit in block
-        Thread.sleep(500);
+        Thread.sleep(1000);
 
         // hashmap to store the topics and its id's
         HashMap<String, Integer> topicToIdMap = new HashMap<>();
@@ -96,7 +96,7 @@ public class BigchainDBJavaDriver {
             capability = RulesDriver.getCapabilities(attributes, metaMap);
 
             examples.doRequest(req_metaData, keys, capability);
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         }
 
         // simulateExecution(examples, keys);
