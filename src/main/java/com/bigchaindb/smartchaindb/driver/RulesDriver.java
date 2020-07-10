@@ -71,11 +71,11 @@ public class RulesDriver {
                     int index = rand.nextInt(topics.size());
                     capSet.add(topics.get(index));
                 }
-
                 capability.addAll(capSet);
                 break;
             }
         }
+
         if (capability.isEmpty()) {
             capability.add(Capabilities.MISC);
         }

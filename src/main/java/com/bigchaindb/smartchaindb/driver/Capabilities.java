@@ -66,7 +66,7 @@ public interface Capabilities {
 		cap.add(Capabilities.POCKET_MACHINING);
 		cap.add(Capabilities.THREADING);
 		cap.add(Capabilities.PRINTING_3D);
-		cap.add(Capabilities.MISC);
+		// cap.add(Capabilities.MISC);
 
 		// cap.add(Capabilities.ADHESIVE_CURING);
 		// cap.add(Capabilities.SOLDERING);

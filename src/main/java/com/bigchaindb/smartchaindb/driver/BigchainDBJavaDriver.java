@@ -3,6 +3,7 @@ package com.bigchaindb.smartchaindb.driver;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.util.*;
+import java.time.LocalDateTime;
 
 //import org.apache.jena.base.Sys;
 import org.json.JSONObject;
@@ -185,6 +186,7 @@ public class BigchainDBJavaDriver {
                     // Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id", tx_id);
+                    js.put("timestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);

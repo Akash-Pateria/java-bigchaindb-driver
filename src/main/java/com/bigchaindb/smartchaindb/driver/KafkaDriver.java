@@ -6,21 +6,19 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
-//import com.gaurav.kafka.constants.IKafkaConstants;
-//import com.gaurav.kafka.consumer.ConsumerCreator;
-//import com.gaurav.kafka.producer.ProducerCreator;
 public class KafkaDriver {
 
 	String req;
+	Producer<String, String> producer;
 
 	public KafkaDriver(String req) {
 		this.req = req;
 	}
 
 	public void runProducer(String topic) {
-		Producer<String, String> producer = ProducerCreator.createRequestProducer();
-
-		// System.out.println("Final request: " + req);
+		if (producer == null) {
+			producer = ProducerCreator.createRequestProducer();
+		}
 
 		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, req);
 		try {
