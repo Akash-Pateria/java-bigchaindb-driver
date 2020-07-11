@@ -18,14 +18,16 @@ public class ConsumerDriver {
         final int threadCount = 2;
         final int maxCapabilityCount = 3;
         final Random random = new Random();
-        final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
-        allTopics.add(Capabilities.MISC);
 
         for (int i = 0; i < threadCount; i++) {
+            final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
+            allTopics.add(Capabilities.MISC);
+
             final List<String> randomTopics = new ArrayList<>();
             for (int k = 0; k < maxCapabilityCount; k++) {
                 final int randomIndex = random.nextInt(allTopics.size());
                 randomTopics.add(allTopics.get(randomIndex));
+                allTopics.remove(randomIndex);
             }
 
             final Thread thread = new Thread(new ParallelConsumers(randomTopics, i + 1), "Thread-" + (i + 1));
