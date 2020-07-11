@@ -79,7 +79,7 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        int numOfRequest = 10000;
+        int numOfRequest = 5000;
         int maxProductCountInRequest = 3;
         Random random = new Random();
         Gson gson = new GsonBuilder().create();
