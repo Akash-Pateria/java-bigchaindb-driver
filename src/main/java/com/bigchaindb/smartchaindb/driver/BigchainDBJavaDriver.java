@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 //import org.apache.jena.base.Sys;
 import org.json.JSONObject;
 
+import kafka.server.ProduceMetadata;
+
 import com.bigchaindb.builders.BigchainDbConfigBuilder;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.Operations;
@@ -15,6 +17,8 @@ import com.bigchaindb.model.GenericCallback;
 import com.bigchaindb.model.MetaData;
 import com.bigchaindb.model.Transaction;
 import com.bigchaindb.util.Base58;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -75,28 +79,48 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        int numOfRequest = 50;
+        int numOfRequest = 10000;
+        int maxProductCountInRequest = 3;
+        Random random = new Random();
+        Gson gson = new GsonBuilder().create();
+
         for (int i = 0; i < numOfRequest; i++) {
             System.out.println("\n\nProcessing request#" + (i + 1));
-            // create metadata for request txn
-            MetaData req_metaData = new MetaData();
-            req_metaData.setMetaData("Quantity", StardogTest.getQuantity());
-            req_metaData.setMetaData("Material", StardogTest.getMaterial());
+            int productCount = random.nextInt(maxProductCountInRequest) + 1;
+            String quantity = StardogTest.getQuantity();
+            String material = StardogTest.getMaterial();
+            Set<String> allCapability = new HashSet<>();
+            List<Map<String, String>> productsList = new ArrayList<>();
 
-            // execute REQUEST transaction
-            List<String> randomAtributes = StardogTest.getKeys();
-            for (int j = 0; j < randomAtributes.size(); j++) {
-                String temp = randomAtributes.get(j);
-                req_metaData.setMetaData(temp, StardogTest.getRandomValues(temp));
+            MetaData reqMetaData = new MetaData();
+            reqMetaData.setMetaData("Quantity", quantity);
+            reqMetaData.setMetaData("Material", material);
+
+            for (int k = 0; k < productCount; k++) {
+                Map<String, String> productMetadata = new TreeMap<String, String>();
+                List<String> randomAtributes = StardogTest.getKeys();
+
+                productMetadata.put("Quantity", quantity);
+                productMetadata.put("Material", material);
+                for (int j = 0; j < randomAtributes.size(); j++) {
+                    String key = randomAtributes.get(j);
+                    productMetadata.put(key, StardogTest.getRandomValues(key));
+                }
+
+                List<String> attributes = new ArrayList<>(productMetadata.keySet());
+                List<String> capability = RulesDriver.getCapabilities(attributes, productMetadata);
+                allCapability.addAll(capability);
+                productsList.add(productMetadata);
             }
 
-            List<String> capability;
-            Map<String, String> metaMap = req_metaData.getMetadata();
-            List<String> attributes = new ArrayList<>(metaMap.keySet());
-            capability = RulesDriver.getCapabilities(attributes, metaMap);
+            System.out.println("Inferred Capabilities: " + allCapability.toString());
 
-            examples.doRequest(req_metaData, keys, capability);
-            Thread.sleep(3000);
+            String productJson = gson.toJson(productsList);
+            reqMetaData.setMetaData("products", productJson);
+            reqMetaData.setMetaData("productCount", String.valueOf(productCount));
+            examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
+
+            Thread.sleep(500);
         }
 
         // simulateExecution(examples, keys);
@@ -107,11 +131,11 @@ public class BigchainDBJavaDriver {
         int maxProductCountInRequest = 3;
         Random random = new Random();
 
-        MetaData req_metaData = new MetaData();
-        req_metaData.setMetaData("Material", "SiliconCarbide");
-        req_metaData.setMetaData("ODCutOffSolid", "name");
-        req_metaData.setMetaData("GeneralClosedPocket", "minRadiusInConcaveCorner");
-        req_metaData.setMetaData("Workpiece", "Seat");
+        MetaData reqMetaData = new MetaData();
+        reqMetaData.setMetaData("Material", "SiliconCarbide");
+        reqMetaData.setMetaData("ODCutOffSolid", "name");
+        reqMetaData.setMetaData("GeneralClosedPocket", "minRadiusInConcaveCorner");
+        reqMetaData.setMetaData("Workpiece", "Seat");
 
         for (;;) {
             int productCount = random.nextInt(maxProductCountInRequest) + 1;
@@ -125,9 +149,9 @@ public class BigchainDBJavaDriver {
                 }
             }
 
-            req_metaData.setMetaData("Quantity", Integer.toString(random.nextInt(10000)));
+            reqMetaData.setMetaData("Quantity", Integer.toString(random.nextInt(10000)));
 
-            driver.doRequest(req_metaData, keys, capabilityTopics);
+            driver.doRequest(reqMetaData, keys, capabilityTopics);
             System.out.println("\n");
             Thread.sleep(5000);
         }
@@ -194,7 +218,6 @@ public class BigchainDBJavaDriver {
                     for (String topic : capability) {
                         kf.runProducer(topic);
                     }
-                    // System.out.println("Producer run complete");
                 }
                 // System.out.println(operation + " transaction pushed Successfully");
                 // onSuccess(response);

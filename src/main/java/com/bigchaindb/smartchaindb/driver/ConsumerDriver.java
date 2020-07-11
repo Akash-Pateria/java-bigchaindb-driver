@@ -90,21 +90,25 @@ public class ConsumerDriver {
         }
 
         private void writeToLog(BufferedWriter writer, final JSONObject jsonReq) {
-            LocalDateTime now = LocalDateTime.now(), creationDateTime = LocalDateTime.now(),
-                    kafkaInTimestamp = LocalDateTime.now();
+            LocalDateTime creationDateTime = jsonReq.has("requestCreationTimestamp")
+                    ? LocalDateTime.parse(jsonReq.getString("requestCreationTimestamp"))
+                    : LocalDateTime.now();
 
-            if (jsonReq.has("requestCreationTimestamp")) {
-                creationDateTime = LocalDateTime.parse(jsonReq.getString("requestCreationTimestamp"));
-            }
+            LocalDateTime kafkaInTimestamp = jsonReq.has("kafkaInTimestamp")
+                    ? LocalDateTime.parse(jsonReq.getString("kafkaInTimestamp"))
+                    : LocalDateTime.now();
 
-            if (jsonReq.has("kafkaInTimestamp")) {
-                kafkaInTimestamp = LocalDateTime.parse(jsonReq.getString("kafkaInTimestamp"));
-            }
+            LocalDateTime now = LocalDateTime.now();
+            int productCount = jsonReq.has("productCount") ? jsonReq.getInt("productCount") : 1;
+            int capabilityCount = jsonReq.has("Capability") ? jsonReq.getJSONArray("Capability").length() : 1;
 
-            final long timeDifferenceInMillis = Duration.between(creationDateTime, now).toMillis();
+            final long timeDifferenceInMillis1 = Duration.between(creationDateTime, now).toMillis();
+            final long timeDifferenceInMillis2 = Duration.between(kafkaInTimestamp, now).toMillis();
+
             try {
-                writer.write(
-                        creationDateTime + "," + kafkaInTimestamp + "," + now + "," + timeDifferenceInMillis + "\n");
+                writer.write(creationDateTime + "," + kafkaInTimestamp + "," + now + "," + timeDifferenceInMillis1 + ","
+                        + timeDifferenceInMillis2 + "," + productCount + ","
+                        + jsonReq.getJSONArray("Capability").length() + "\n");
             } catch (final IOException e) {
                 e.printStackTrace();
             }

@@ -80,7 +80,6 @@ public class RulesDriver {
             capability.add(Capabilities.MISC);
         }
 
-        System.out.println("Inferred Capabilities: " + capability.toString());
         return capability;
     }
 }
