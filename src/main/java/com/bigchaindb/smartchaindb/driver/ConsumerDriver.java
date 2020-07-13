@@ -59,7 +59,7 @@ public class ConsumerDriver {
         public void run() {
 
             try (BufferedWriter writer = new BufferedWriter(
-                    new FileWriter(Thread.currentThread().getName() + ".txt", true))) {
+                    new FileWriter(Thread.currentThread().getName() + ".csv", true))) {
 
                 final AtomicBoolean addRequest = new AtomicBoolean(true);
                 consumer.subscribe(Collections.singletonList(IKafkaConstants.TOPIC_NAME));
