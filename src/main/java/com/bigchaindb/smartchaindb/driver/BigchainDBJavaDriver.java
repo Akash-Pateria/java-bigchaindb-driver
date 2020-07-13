@@ -8,8 +8,6 @@ import java.time.LocalDateTime;
 //import org.apache.jena.base.Sys;
 import org.json.JSONObject;
 
-import kafka.server.ProduceMetadata;
-
 import com.bigchaindb.builders.BigchainDbConfigBuilder;
 import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.Operations;
@@ -17,8 +15,6 @@ import com.bigchaindb.model.GenericCallback;
 import com.bigchaindb.model.MetaData;
 import com.bigchaindb.model.Transaction;
 import com.bigchaindb.util.Base58;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -82,14 +78,12 @@ public class BigchainDBJavaDriver {
         int numOfRequest = 5000;
         int maxProductCountInRequest = 3;
         Random random = new Random();
-        Gson gson = new GsonBuilder().create();
 
         for (int i = 0; i < numOfRequest; i++) {
             System.out.println("\n\nProcessing request#" + (i + 1));
             int productCount = random.nextInt(maxProductCountInRequest) + 1;
             String quantity = StardogTest.getQuantity();
             String material = StardogTest.getMaterial();
-            Set<String> allCapability = new HashSet<>();
             List<Map<String, String>> productsList = new ArrayList<>();
 
             MetaData reqMetaData = new MetaData();
@@ -107,18 +101,12 @@ public class BigchainDBJavaDriver {
                     productMetadata.put(key, StardogTest.getRandomValues(key));
                 }
 
-                List<String> attributes = new ArrayList<>(productMetadata.keySet());
-                List<String> capability = RulesDriver.getCapabilities(attributes, productMetadata);
-                allCapability.addAll(capability);
                 productsList.add(productMetadata);
             }
 
-            System.out.println("Inferred Capabilities: " + allCapability.toString());
-
-            String productJson = gson.toJson(productsList);
-            reqMetaData.setMetaData("products", productJson);
+            reqMetaData.setMetaData("products", productsList);
             reqMetaData.setMetaData("productCount", String.valueOf(productCount));
-            examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
+            examples.doRequest(reqMetaData, keys, new ArrayList<>());
 
             Thread.sleep(500);
         }
@@ -180,47 +168,19 @@ public class BigchainDBJavaDriver {
             public void pushedSuccessfully(Response response) {
                 if (operation.equals("REQUEST_FOR_QUOTE")) {
 
-                    Map<String, String> metaMap = metadata.getMetadata();
-                    // String material = metaMap.get("Material");
-                    // int quantity = Integer.parseInt(metaMap.get("Quantity"));
-                    // List<String> attributes = new ArrayList<>(metaMap.keySet());
-                    // for(int i=0;i<attributes.size();i++){
-                    // System.out.println("keys --- "+attributes.get(i));
-                    // }
+                    Map<String, Object> metaMap = metadata.getMetadata();
                     JSONObject js = new JSONObject(metaMap);
-                    // List<String> capability;
 
-                    // Rules for topic selection
-                    // if(material != null && material.equalsIgnoreCase("PolyCarbonate")) {
-                    // if(quantity < 1000){
-                    // capability.add(Capabilities.PRINTING_3D);
-                    // capability.add(Capabilities.POCKET_MACHINING);
-                    // }
-                    // else {
-                    // capability.add(Capabilities.PLASTIC);
-                    // capability.add(Capabilities.MILLING);
-                    // capability.add(Capabilities.THREADING);
-                    // }
-                    // }
-                    // else{
-                    // capability.add(Capabilities.MISC);
-                    // }
-                    // capability = rulesDriver.getCapabilities(attributes,metaMap);
-
-                    // Need to tag each capability with an integer.
                     js.put("Capability", capability);
                     js.put("Transaction_id", tx_id);
                     js.put("kafkaInTimestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
                     KafkaDriver kf = new KafkaDriver(rfq_form);
-                    // for each topic in the request, it sends the request to the kafka driver.
-                    for (String topic : capability) {
-                        kf.runProducer(topic);
-                    }
+                    kf.runProducer(IKafkaConstants.TOPIC_NAME);
                 }
-                // System.out.println(operation + " transaction pushed Successfully");
-                // onSuccess(response);
+
+                onSuccess(response);
             }
 
             public void otherError(Response response) {

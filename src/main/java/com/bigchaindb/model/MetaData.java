@@ -10,21 +10,19 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 import java.util.TreeMap;
 
-
-
 /**
  * The Class MetaData.
  */
 public class MetaData {
-	
+
 	/** The id. */
 	@SerializedName("id")
 	private String id;
-	
+
 	/** The metadata. */
 	@SerializedName("metadata")
-	private Map<String,String> metadata = new TreeMap<String, String>();
-	
+	private Map<String, Object> metadata = new TreeMap<String, Object>();
+
 	/**
 	 * Gets the id.
 	 *
@@ -48,11 +46,11 @@ public class MetaData {
 	 *
 	 * @return the metadata
 	 */
-	public Map<String, String> getMetadata() {
+	public Map<String, Object> getMetadata() {
 		return metadata;
 	}
 
-	public void setMetaData(String key, String value) {
+	public void setMetaData(String key, Object value) {
 		this.metadata.put(key, value);
 	}
 }

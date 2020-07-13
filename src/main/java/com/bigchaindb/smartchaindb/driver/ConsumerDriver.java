@@ -3,10 +3,14 @@ package com.bigchaindb.smartchaindb.driver;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -32,22 +36,20 @@ public class ConsumerDriver {
 
             final Thread thread = new Thread(new ParallelConsumers(randomTopics, i + 1), "Thread-" + (i + 1));
             System.out.println("\nThread" + (i + 1) + " subscribed to topics: " + randomTopics.toString());
-            Thread.sleep(5000);
+            Thread.sleep(1000);
             thread.start();
         }
     }
 
     private static class ParallelConsumers implements Runnable {
         private final List<JSONObject> RequestList;
-        private final HashSet<String> processedRequests;
-        private final List<String> subscribedTopics;
+        private final Set<String> subscribedTopics;
         private final int consumerRank;
         private final Consumer<String, String> consumer;
 
         ParallelConsumers(final List<String> topics, final int consumerNum) {
             RequestList = new ArrayList<>();
-            processedRequests = new HashSet<>();
-            subscribedTopics = topics;
+            subscribedTopics = new HashSet<String>(topics);
             consumerRank = consumerNum;
             consumer = ConsumerCreator
                     .createRequestConsumer("consumerGroup-" + consumerRank + "-" + LocalDateTime.now());
@@ -55,31 +57,23 @@ public class ConsumerDriver {
 
         @Override
         public void run() {
-            final HashSet<String> checkTopics = new HashSet<String>(subscribedTopics);
 
             try (BufferedWriter writer = new BufferedWriter(
                     new FileWriter(Thread.currentThread().getName() + ".txt", true))) {
 
                 final AtomicBoolean addRequest = new AtomicBoolean(true);
-                consumer.subscribe(subscribedTopics);
+                consumer.subscribe(Collections.singletonList(IKafkaConstants.TOPIC_NAME));
 
                 while (true) {
                     final ConsumerRecords<String, String> consumerRecords = consumer
                             .poll(Duration.ofMillis(Long.MAX_VALUE));
-                    /*
-                     * if (consumerRecords.count() == 0) { noMessageFound++; if (noMessageFound >
-                     * IKafkaConstants.MAX_NO_MESSAGE_FOUND_COUNT) { break; } else { continue; } }
-                     */
 
                     consumerRecords.forEach(record -> {
                         System.out.println("\nRecord: " + record.value());
                         final JSONObject jsonReq = new JSONObject(record.value());
 
-                        if (!processedRequests.contains(jsonReq.get("Transaction_id"))) {
-                            checkRequest(checkTopics, addRequest, jsonReq);
-                        }
-
-                        writeToLog(writer, jsonReq);
+                        int capabilityCount = checkRequest(subscribedTopics, addRequest, jsonReq);
+                        writeToLog(writer, jsonReq, capabilityCount);
                     });
 
                     consumer.commitAsync();
@@ -91,7 +85,8 @@ public class ConsumerDriver {
             }
         }
 
-        private void writeToLog(BufferedWriter writer, final JSONObject jsonReq) {
+        private void writeToLog(BufferedWriter writer, final JSONObject jsonReq, int capabilityCount) {
+
             LocalDateTime creationDateTime = jsonReq.has("requestCreationTimestamp")
                     ? LocalDateTime.parse(jsonReq.getString("requestCreationTimestamp"))
                     : LocalDateTime.now();
@@ -102,39 +97,65 @@ public class ConsumerDriver {
 
             LocalDateTime now = LocalDateTime.now();
             int productCount = jsonReq.has("productCount") ? jsonReq.getInt("productCount") : 1;
-            int capabilityCount = jsonReq.has("Capability") ? jsonReq.getJSONArray("Capability").length() : 1;
 
             final long timeDifferenceInMillis1 = Duration.between(creationDateTime, now).toMillis();
             final long timeDifferenceInMillis2 = Duration.between(kafkaInTimestamp, now).toMillis();
 
             try {
                 writer.write(creationDateTime + "," + kafkaInTimestamp + "," + now + "," + timeDifferenceInMillis1 + ","
-                        + timeDifferenceInMillis2 + "," + productCount + ","
-                        + jsonReq.getJSONArray("Capability").length() + "\n");
+                        + timeDifferenceInMillis2 + "," + productCount + "," + capabilityCount + "\n");
             } catch (final IOException e) {
                 e.printStackTrace();
             }
         }
 
-        private void checkRequest(final HashSet<String> checkTopics, final AtomicBoolean addRequest,
-                final JSONObject jsonReq) {
-            if (jsonReq.has("Capability") && jsonReq.has("Transaction_id")) {
-                final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
+        private int checkRequest(Set<String> checkTopics, final AtomicBoolean addRequest, final JSONObject jsonReq) {
 
-                for (int i = 0; i < reqCapabilities.length(); i++) {
+            int capabilityCount = 0;
+            if (jsonReq.has("products") && jsonReq.has("Transaction_id")) {
+
+                List<String> reqCapabilities = inferCapabilities(jsonReq);
+                capabilityCount = reqCapabilities.size();
+                boolean bin = true;
+
+                for (int i = 0; i < capabilityCount; i++) {
                     if (!checkTopics.contains(reqCapabilities.get(i))) {
                         addRequest.set(false);
+                        bin = false;
                         break;
                     }
                 }
 
                 final boolean flag = addRequest.get();
-                if (flag == true) {
-                    processedRequests.add((String) jsonReq.get("Transaction_id"));
+                if (bin == true) {
                     RequestList.add(jsonReq);
+                    System.out.println("\n\n****************** Match Found ******************");
+                    System.out.println("Transaction Id: " + jsonReq.get("Transaction_id"));
+                    System.out.println("******************************************************\n\n");
                 }
             }
 
+            return capabilityCount;
+        }
+
+        private List<String> inferCapabilities(final JSONObject jsonReq) {
+
+            Set<String> allCapability = new HashSet<String>();
+            JSONArray jsonArray = jsonReq.getJSONArray("products");
+            Gson gson = new Gson();
+            Type type = new TypeToken<Map<String, String>>() {
+            }.getType();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject currentObject = jsonArray.getJSONObject(i);
+                Map<String, String> productMetadata = gson.fromJson(currentObject.toString(), type);
+
+                List<String> attributes = new ArrayList<>(productMetadata.keySet());
+                List<String> capability = RulesDriver.getCapabilities(attributes, productMetadata);
+                allCapability.addAll(capability);
+            }
+            System.out.println("Inferred Capabilities: " + allCapability.toString());
+            return new ArrayList<>(allCapability);
         }
     }
 }
