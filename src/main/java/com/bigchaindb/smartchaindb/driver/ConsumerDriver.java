@@ -25,9 +25,9 @@ public class ConsumerDriver {
 
         for (int i = 0; i < threadCount; i++) {
             final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
-            allTopics.add(Capabilities.MISC);
-
             final List<String> randomTopics = new ArrayList<>();
+            randomTopics.add(Capabilities.MISC);
+
             for (int k = 0; k < maxCapabilityCount; k++) {
                 final int randomIndex = random.nextInt(allTopics.size());
                 randomTopics.add(allTopics.get(randomIndex));
