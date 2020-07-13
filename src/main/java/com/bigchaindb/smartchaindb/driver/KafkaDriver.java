@@ -6,15 +6,16 @@ import java.util.concurrent.ExecutionException;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.logging.log4j.core.pattern.AbstractStyleNameConverter.Red;
 
 public class KafkaDriver {
 
 	String req;
+	String key;
 	Producer<String, String> producer;
 
-	public KafkaDriver(String req) {
+	public KafkaDriver(String req, String key) {
 		this.req = req;
+		this.key = key;
 	}
 
 	public void runProducer(String topic) {
@@ -23,7 +24,7 @@ public class KafkaDriver {
 			producer = ProducerCreator.createRequestProducer("requestor" + rand.nextInt(10));
 		}
 
-		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, req);
+		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, req);
 		try {
 			RecordMetadata metadata = producer.send(record).get();
 

@@ -138,7 +138,7 @@ public class BigchainDBJavaDriver {
 
                 try {
                     examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -232,7 +232,7 @@ public class BigchainDBJavaDriver {
                     js.put("kafkaInTimestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
-                    KafkaDriver kf = new KafkaDriver(rfq_form);
+                    KafkaDriver kf = new KafkaDriver(rfq_form, tx_id);
                     // for each topic in the request, it sends the request to the kafka driver.
                     for (String topic : capability) {
                         kf.runProducer(topic);
