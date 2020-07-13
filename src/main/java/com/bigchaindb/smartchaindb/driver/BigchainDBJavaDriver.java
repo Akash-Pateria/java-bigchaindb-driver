@@ -17,8 +17,6 @@ import com.bigchaindb.model.GenericCallback;
 import com.bigchaindb.model.MetaData;
 import com.bigchaindb.model.Transaction;
 import com.bigchaindb.util.Base58;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -82,7 +80,6 @@ public class BigchainDBJavaDriver {
         int numOfRequest = 5000;
         int maxProductCountInRequest = 3;
         Random random = new Random();
-        Gson gson = new GsonBuilder().create();
 
         for (int i = 0; i < numOfRequest; i++) {
             System.out.println("\n\nProcessing request#" + (i + 1));
@@ -93,8 +90,8 @@ public class BigchainDBJavaDriver {
             List<Map<String, String>> productsList = new ArrayList<>();
 
             MetaData reqMetaData = new MetaData();
-            reqMetaData.setMetaData("Quantity", quantity);
-            reqMetaData.setMetaData("Material", material);
+            // reqMetaData.setMetaData("Quantity", quantity);
+            // reqMetaData.setMetaData("Material", material);
 
             for (int k = 0; k < productCount; k++) {
                 Map<String, String> productMetadata = new TreeMap<String, String>();
@@ -115,9 +112,7 @@ public class BigchainDBJavaDriver {
 
             System.out.println("Inferred Capabilities: " + allCapability.toString());
 
-            String productJson = gson.toJson(productsList);
-            reqMetaData.setMetaData("products", productJson);
-            reqMetaData.setMetaData("productCount", String.valueOf(productCount));
+            reqMetaData.setMetaData("products", productsList);
             examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
 
             Thread.sleep(500);
@@ -180,7 +175,7 @@ public class BigchainDBJavaDriver {
             public void pushedSuccessfully(Response response) {
                 if (operation.equals("REQUEST_FOR_QUOTE")) {
 
-                    Map<String, String> metaMap = metadata.getMetadata();
+                    Map<String, Object> metaMap = metadata.getMetadata();
                     // String material = metaMap.get("Material");
                     // int quantity = Integer.parseInt(metaMap.get("Quantity"));
                     // List<String> attributes = new ArrayList<>(metaMap.keySet());
