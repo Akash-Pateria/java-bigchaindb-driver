@@ -77,49 +77,73 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        int numOfRequest = 5000;
-        int maxProductCountInRequest = 3;
-        Random random = new Random();
+        final int threadCount = 4;
 
-        for (int i = 0; i < numOfRequest; i++) {
-            System.out.println("\n\nProcessing request#" + (i + 1));
-            int productCount = random.nextInt(maxProductCountInRequest) + 1;
-            String quantity = StardogTest.getQuantity();
-            String material = StardogTest.getMaterial();
-            Set<String> allCapability = new HashSet<>();
-            List<Map<String, String>> productsList = new ArrayList<>();
-
-            MetaData reqMetaData = new MetaData();
-            // reqMetaData.setMetaData("Quantity", quantity);
-            // reqMetaData.setMetaData("Material", material);
-
-            for (int k = 0; k < productCount; k++) {
-                Map<String, String> productMetadata = new TreeMap<String, String>();
-                List<String> randomAtributes = StardogTest.getKeys();
-
-                productMetadata.put("Quantity", quantity);
-                productMetadata.put("Material", material);
-                for (int j = 0; j < randomAtributes.size(); j++) {
-                    String key = randomAtributes.get(j);
-                    productMetadata.put(key, StardogTest.getRandomValues(key));
-                }
-
-                List<String> attributes = new ArrayList<>(productMetadata.keySet());
-                List<String> capability = RulesDriver.getCapabilities(attributes, productMetadata);
-                allCapability.addAll(capability);
-                productsList.add(productMetadata);
-            }
-
-            System.out.println("Inferred Capabilities: " + allCapability.toString());
-
-            reqMetaData.setMetaData("products", productsList);
-            examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
-
-            Thread.sleep(500);
+        for (int i = 0; i < threadCount; i++) {
+            final Thread thread = new Thread(new ParallelProducers(examples, keys), "Producer-" + (i + 1));
+            Thread.sleep(1000);
+            thread.start();
         }
 
         // simulateExecution(examples, keys);
         // DBConnectionPool.destroyConnectionPool();
+    }
+
+    private static class ParallelProducers implements Runnable {
+        private final BigchainDBJavaDriver examples;
+        private final KeyPair keys;
+
+        ParallelProducers(BigchainDBJavaDriver driver, KeyPair keyPairs) {
+            examples = driver;
+            keys = keyPairs;
+        }
+
+        @Override
+        public void run() throws RuntimeException {
+            int numOfRequest = 5000;
+            int maxProductCountInRequest = 3;
+            Random random = new Random();
+
+            for (int i = 0; i < numOfRequest; i++) {
+                System.out.println("\n\nProcessing request#" + (i + 1));
+                int productCount = random.nextInt(maxProductCountInRequest) + 1;
+                String quantity = StardogTest.getQuantity();
+                String material = StardogTest.getMaterial();
+                Set<String> allCapability = new HashSet<>();
+                List<Map<String, String>> productsList = new ArrayList<>();
+
+                MetaData reqMetaData = new MetaData();
+                // reqMetaData.setMetaData("Quantity", quantity);
+                // reqMetaData.setMetaData("Material", material);
+
+                for (int k = 0; k < productCount; k++) {
+                    Map<String, String> productMetadata = new TreeMap<String, String>();
+                    List<String> randomAtributes = StardogTest.getKeys();
+
+                    productMetadata.put("Quantity", quantity);
+                    productMetadata.put("Material", material);
+                    for (int j = 0; j < randomAtributes.size(); j++) {
+                        String key = randomAtributes.get(j);
+                        productMetadata.put(key, StardogTest.getRandomValues(key));
+                    }
+
+                    List<String> attributes = new ArrayList<>(productMetadata.keySet());
+                    List<String> capability = RulesDriver.getCapabilities(attributes, productMetadata);
+                    allCapability.addAll(capability);
+                    productsList.add(productMetadata);
+                }
+
+                System.out.println("Inferred Capabilities: " + allCapability.toString());
+                reqMetaData.setMetaData("products", productsList);
+
+                try {
+                    examples.doRequest(reqMetaData, keys, new ArrayList<>(allCapability));
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private static void simulateExecution(BigchainDBJavaDriver driver, KeyPair keys) throws Exception {
