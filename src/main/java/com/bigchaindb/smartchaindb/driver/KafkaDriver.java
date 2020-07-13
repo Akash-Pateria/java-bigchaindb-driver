@@ -10,10 +10,12 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 public class KafkaDriver {
 
 	String req;
+	String key;
 	Producer<String, String> producer;
 
-	public KafkaDriver(String req) {
+	public KafkaDriver(String req, String key) {
 		this.req = req;
+		this.key = key;
 	}
 
 	public void runProducer(String topic) {
@@ -22,7 +24,7 @@ public class KafkaDriver {
 			producer = ProducerCreator.createRequestProducer("requestor" + rand.nextInt(10));
 		}
 
-		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, req);
+		ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, req);
 		try {
 			RecordMetadata metadata = producer.send(record).get();
 

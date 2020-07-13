@@ -167,7 +167,7 @@ public class BigchainDBJavaDriver {
 
             driver.doRequest(reqMetaData, keys, capabilityTopics);
             System.out.println("\n");
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         }
     }
 
@@ -202,7 +202,7 @@ public class BigchainDBJavaDriver {
                     js.put("kafkaInTimestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
-                    KafkaDriver kf = new KafkaDriver(rfq_form);
+                    KafkaDriver kf = new KafkaDriver(rfq_form, tx_id);
                     kf.runProducer(IKafkaConstants.TOPIC_NAME);
                 }
 
