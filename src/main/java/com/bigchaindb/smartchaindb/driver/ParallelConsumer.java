@@ -20,12 +20,10 @@ import org.json.JSONObject;
 public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
 
     private final String topic;
-    private int consumerRank;
     private final Consumer<String, String> consumer;
 
     ParallelConsumer(String topic, int consumerRank) {
         this.topic = topic;
-        this.consumerRank = consumerRank;
         String consumerGroup = "consumerGroup-" + managerRank + "-" + consumerRank + LocalDateTime.now();
         consumer = ConsumerCreator.createRequestConsumer(consumerGroup);
     }
@@ -36,7 +34,6 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(Thread.currentThread().getName() + ".csv", true))) {
 
-            final AtomicBoolean addRequest = new AtomicBoolean(true);
             consumer.subscribe(Collections.singletonList(topic));
 
             while (true) {
@@ -45,10 +42,13 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
 
                 consumerRecords.forEach(record -> {
                     final JSONObject jsonReq = new JSONObject(record.value());
-
+                    String transactionId = jsonReq.getString("Transaction_id");
                     Map<String, String> conditionMap = topicConditionMap.get(topic);
-                    if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
-                        checkRequest(addRequest, jsonReq);
+
+                    if (!processedTransactionIds.contains(transactionId)
+                            && (conditionMap == null || checkConditions(jsonReq, conditionMap))) {
+                        processedTransactionIds.add(transactionId);
+                        checkRequest(jsonReq);
                     }
 
                     writeToLog(writer, jsonReq);
@@ -105,25 +105,23 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
         }
     }
 
-    private void checkRequest(final AtomicBoolean addRequest, final JSONObject jsonReq) {
-        if (jsonReq.has("Capability") && jsonReq.has("Transaction_id")) {
-            final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
+    private void checkRequest(final JSONObject jsonReq) {
 
+        if (jsonReq.has("Capability") && jsonReq.has("Transaction_id")) {
+            boolean matchFound = true;
+            final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
             for (int i = 0; i < reqCapabilities.length(); i++) {
                 if (!subscribedTopics.contains(reqCapabilities.get(i))) {
-                    addRequest.set(false);
+                    matchFound = false;
                     break;
                 }
             }
 
-            final boolean flag = addRequest.get();
-            if (flag == true) {
-                String transactionId = jsonReq.getString("Transaction_id");
+            if (matchFound) {
                 // RequestList.add(jsonReq);
-                matchedTransactionIds.add(transactionId);
                 System.out.println(
                         "\n\n************************************ Match Found ************************************");
-                System.out.println("Transaction Id: " + transactionId);
+                System.out.println("Transaction Id: " + jsonReq.getString("Transaction_id"));
                 System.out.println(
                         "******************************************************************************************\n\n");
             }

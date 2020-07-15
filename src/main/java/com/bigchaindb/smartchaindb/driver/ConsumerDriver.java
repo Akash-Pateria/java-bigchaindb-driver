@@ -19,7 +19,7 @@ public class ConsumerDriver {
                 allTopics.remove(randomIndex);
             }
 
-            KafkaConsumerGroup group = new KafkaConsumerGroup(randomTopics, 0);
+            KafkaConsumerGroup group = new KafkaConsumerGroup(randomTopics, i);
 
             // final Thread thread = new Thread(new ParallelConsumers(randomTopics, i + 1),
             // "Thread-" + (i + 1));
