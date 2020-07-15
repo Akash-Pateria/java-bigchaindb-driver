@@ -75,10 +75,9 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        final int threadCount = 4;
+        final int threadCount = 10;
         for (int i = 0; i < threadCount; i++) {
             final Thread thread = new Thread(new ParallelProducers(examples, keys), "Producers-" + (i + 1));
-            Thread.sleep(1000);
             thread.start();
         }
 
@@ -98,7 +97,7 @@ public class BigchainDBJavaDriver {
 
         @Override
         public void run() throws RuntimeException {
-            int numOfRequest = 2000;
+            int numOfRequest = 5000;
             int maxProductCountInRequest = 3;
             Random random = new Random();
 
@@ -133,7 +132,7 @@ public class BigchainDBJavaDriver {
 
                 try {
                     examples.doRequest(reqMetaData, keys, new ArrayList<>());
-                    Thread.sleep(500);
+                    Thread.sleep(200);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

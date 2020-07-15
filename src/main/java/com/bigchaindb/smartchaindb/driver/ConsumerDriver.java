@@ -19,26 +19,37 @@ import org.json.JSONObject;
 
 public class ConsumerDriver {
     public static void main(final String[] args) throws InterruptedException {
-        final int threadCount = 2;
-        final int maxCapabilityCount = 3;
+        // final int threadCount = 2;
+        final int maxCapabilityCount = 10;
         final Random random = new Random();
 
-        for (int i = 0; i < threadCount; i++) {
-            final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
-            final List<String> randomTopics = new ArrayList<>();
-            randomTopics.add(Capabilities.MISC);
+        final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
+        final List<String> randomTopics = new ArrayList<>();
+        randomTopics.add(Capabilities.MISC);
 
-            for (int k = 0; k < maxCapabilityCount; k++) {
-                final int randomIndex = random.nextInt(allTopics.size());
-                randomTopics.add(allTopics.get(randomIndex));
-                allTopics.remove(randomIndex);
-            }
-
-            final Thread thread = new Thread(new ParallelConsumers(randomTopics, i + 1), "Thread-" + (i + 1));
-            System.out.println("\nThread" + (i + 1) + " subscribed to topics: " + randomTopics.toString());
-            Thread.sleep(1000);
-            thread.start();
+        for (int k = 0; k < maxCapabilityCount; k++) {
+            final int randomIndex = random.nextInt(allTopics.size());
+            randomTopics.add(allTopics.get(randomIndex));
+            allTopics.remove(randomIndex);
         }
+
+        new ParallelConsumers(randomTopics, 0).run();
+
+        /*
+         * for (int i = 0; i < threadCount; i++) { final List<String> allTopics = new
+         * ArrayList<String>(Capabilities.getAll()); final List<String> randomTopics =
+         * new ArrayList<>(); randomTopics.add(Capabilities.MISC);
+         * 
+         * for (int k = 0; k < maxCapabilityCount; k++) { final int randomIndex =
+         * random.nextInt(allTopics.size());
+         * randomTopics.add(allTopics.get(randomIndex)); allTopics.remove(randomIndex);
+         * }
+         * 
+         * final Thread thread = new Thread(new ParallelConsumers(randomTopics, i + 1),
+         * "Thread-" + (i + 1)); System.out.println("\nThread" + (i + 1) +
+         * " subscribed to topics: " + randomTopics.toString()); Thread.sleep(1000);
+         * thread.start(); }
+         */
     }
 
     private static class ParallelConsumers implements Runnable {
@@ -61,7 +72,6 @@ public class ConsumerDriver {
             try (BufferedWriter writer = new BufferedWriter(
                     new FileWriter(Thread.currentThread().getName() + ".csv", true))) {
 
-                final AtomicBoolean addRequest = new AtomicBoolean(true);
                 consumer.subscribe(Collections.singletonList(IKafkaConstants.TOPIC_NAME));
 
                 while (true) {
@@ -72,7 +82,7 @@ public class ConsumerDriver {
                         System.out.println("\nRecord: " + record.value());
                         final JSONObject jsonReq = new JSONObject(record.value());
 
-                        int capabilityCount = checkRequest(subscribedTopics, addRequest, jsonReq);
+                        int capabilityCount = checkRequest(subscribedTopics, jsonReq);
                         writeToLog(writer, jsonReq, capabilityCount);
                     });
 
@@ -109,7 +119,7 @@ public class ConsumerDriver {
             }
         }
 
-        private int checkRequest(Set<String> checkTopics, final AtomicBoolean addRequest, final JSONObject jsonReq) {
+        private int checkRequest(Set<String> checkTopics, final JSONObject jsonReq) {
 
             int capabilityCount = 0;
             if (jsonReq.has("products") && jsonReq.has("Transaction_id")) {
@@ -120,13 +130,11 @@ public class ConsumerDriver {
 
                 for (int i = 0; i < capabilityCount; i++) {
                     if (!checkTopics.contains(reqCapabilities.get(i))) {
-                        addRequest.set(false);
                         bin = false;
                         break;
                     }
                 }
 
-                final boolean flag = addRequest.get();
                 if (bin == true) {
                     RequestList.add(jsonReq);
                     System.out.println("\n\n****************** Match Found ******************");
