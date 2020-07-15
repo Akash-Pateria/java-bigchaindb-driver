@@ -99,7 +99,7 @@ public class BigchainDBJavaDriver {
 
         @Override
         public void run() throws RuntimeException {
-            int numOfRequest = 5000;
+            int numOfRequest = 2000;
             int maxProductCountInRequest = 3;
             Random random = new Random();
 
