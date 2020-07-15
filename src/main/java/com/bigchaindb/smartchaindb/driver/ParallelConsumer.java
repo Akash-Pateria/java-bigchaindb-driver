@@ -44,15 +44,15 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
                         .poll(Duration.ofMillis(Long.MAX_VALUE));
 
                 consumerRecords.forEach(record -> {
-                    System.out.println("\nRecord: " + record.value());
                     final JSONObject jsonReq = new JSONObject(record.value());
 
                     Map<String, String> conditionMap = topicConditionMap.get(topic);
-                    // if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
-                    // checkRequest(addRequest, jsonReq);
-                    // }
+                    if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
+                        checkRequest(addRequest, jsonReq);
+                    }
 
                     writeToLog(writer, jsonReq);
+                    System.out.println("\nRecord: " + record.value());
                 });
 
                 consumer.commitAsync();
