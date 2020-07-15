@@ -7,29 +7,26 @@ import org.json.JSONObject;
 
 public class KafkaConsumerGroup {
     protected Set<String> subscribedTopics;
-    // protected Map<String, ParallelConsumer> topicConsumerMap;
     // protected List<JSONObject> RequestList;
     protected Set<String> processedTransactionIds;
     protected Map<String, Map<String, String>> topicConditionMap;
-    protected int managerRank;
+    protected int rank;
 
     KafkaConsumerGroup() {
         subscribedTopics = new HashSet<>();
-        // topicConsumerMap = new HashMap<>();
         // RequestList = new ArrayList<>();
         processedTransactionIds = new ConcurrentHashSet<>();
         topicConditionMap = new HashMap<>();
-        managerRank = 0;
+        rank = 0;
     }
 
     public KafkaConsumerGroup(List<String> topics, int managerRank) {
         this();
         subscribedTopics.addAll(topics);
-        this.managerRank = managerRank;
+        this.rank = managerRank;
         for (int i = 0; i < topics.size(); i++) {
             String topic = topics.get(i);
-            ParallelConsumer consumer = new ParallelConsumer(topic, i);
-            // topicConsumerMap.put(topic, consumer);
+            ParallelConsumer consumer = new ParallelConsumer(this, topic, i);
 
             final Thread thread = new Thread(consumer, "Consumer-" + managerRank + "-" + i);
             System.out.println("\nThread" + thread.getName() + " subscribed to topic: " + topic);
@@ -49,5 +46,37 @@ public class KafkaConsumerGroup {
     public void addConditions(String topic, Map<String, String> conditions) {
         Map<String, String> conditionMap = topicConditionMap.get(topic);
         conditionMap.putAll(conditions);
+    }
+
+    public Set<String> getSubscribedTopics() {
+        return subscribedTopics;
+    }
+
+    public void setSubscribedTopics(Set<String> subscribedTopics) {
+        this.subscribedTopics = subscribedTopics;
+    }
+
+    public Set<String> getProcessedTransactionIds() {
+        return processedTransactionIds;
+    }
+
+    public void addProcessedTransactionIds(String transactionId) {
+        this.processedTransactionIds.add(transactionId);
+    }
+
+    public Map<String, Map<String, String>> getTopicConditionMap() {
+        return topicConditionMap;
+    }
+
+    public void setTopicConditionMap(Map<String, Map<String, String>> topicConditionMap) {
+        this.topicConditionMap = topicConditionMap;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
     }
 }

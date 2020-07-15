@@ -6,25 +6,22 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-import java.lang.reflect.Type;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
+public class ParallelConsumer implements Runnable {
 
+    private KafkaConsumerGroup manager;
     private final String topic;
     private final Consumer<String, String> consumer;
 
-    ParallelConsumer(String topic, int consumerRank) {
+    public ParallelConsumer(KafkaConsumerGroup manager, String topic, int consumerRank) {
+        this.manager = manager;
         this.topic = topic;
-        String consumerGroup = "consumerGroup-" + managerRank + "-" + consumerRank + LocalDateTime.now();
+        String consumerGroup = "consumerGroup-" + this.manager.getRank() + "-" + consumerRank + LocalDateTime.now();
         consumer = ConsumerCreator.createRequestConsumer(consumerGroup);
     }
 
@@ -39,15 +36,15 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
             while (true) {
                 final ConsumerRecords<String, String> consumerRecords = consumer
                         .poll(Duration.ofMillis(Long.MAX_VALUE));
+                Map<String, String> conditionMap = manager.getTopicConditionMap().get(topic);
 
                 consumerRecords.forEach(record -> {
                     final JSONObject jsonReq = new JSONObject(record.value());
                     String transactionId = jsonReq.getString("Transaction_id");
-                    Map<String, String> conditionMap = topicConditionMap.get(topic);
 
-                    if (!processedTransactionIds.contains(transactionId)
+                    if (!manager.getProcessedTransactionIds().contains(transactionId)
                             && (conditionMap == null || checkConditions(jsonReq, conditionMap))) {
-                        processedTransactionIds.add(transactionId);
+                        manager.addProcessedTransactionIds(transactionId);
                         checkRequest(jsonReq);
                     }
 
@@ -67,17 +64,15 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
     private boolean checkConditions(final JSONObject jsonReq, Map<String, String> conditionMap) {
         boolean result = true;
 
-        for (String key : conditionMap.keySet()) {
-            JSONArray jsonArray = jsonReq.getJSONArray("products");
-            Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, String>>() {
-            }.getType();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject currentObject = jsonArray.getJSONObject(i);
-                Map<String, String> productMetadata = gson.fromJson(currentObject.toString(), type);
-            }
-        }
+        /*
+         * for (String key : conditionMap.keySet()) { JSONArray jsonArray =
+         * jsonReq.getJSONArray("products"); Gson gson = new Gson(); Type type = new
+         * TypeToken<Map<String, String>>() { }.getType();
+         * 
+         * for (int i = 0; i < jsonArray.length(); i++) { JSONObject currentObject =
+         * jsonArray.getJSONObject(i); Map<String, String> productMetadata =
+         * gson.fromJson(currentObject.toString(), type); } }
+         */
 
         return result;
     }
@@ -110,8 +105,10 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
         if (jsonReq.has("Capability") && jsonReq.has("Transaction_id")) {
             boolean matchFound = true;
             final JSONArray reqCapabilities = jsonReq.getJSONArray("Capability");
+            final Set<String> offeredCapabilities = manager.getSubscribedTopics();
+
             for (int i = 0; i < reqCapabilities.length(); i++) {
-                if (!subscribedTopics.contains(reqCapabilities.get(i))) {
+                if (!offeredCapabilities.contains(reqCapabilities.get(i))) {
                     matchFound = false;
                     break;
                 }
