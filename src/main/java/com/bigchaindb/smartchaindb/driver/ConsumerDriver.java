@@ -20,7 +20,7 @@ import org.json.JSONObject;
 public class ConsumerDriver {
     public static void main(final String[] args) throws InterruptedException {
         // final int threadCount = 2;
-        final int maxCapabilityCount = 10;
+        final int maxCapabilityCount = 6;
         final Random random = new Random();
 
         final List<String> allTopics = new ArrayList<String>(Capabilities.getAll());
