@@ -48,9 +48,9 @@ public class ParallelConsumer extends KafkaConsumerGroup implements Runnable {
                     final JSONObject jsonReq = new JSONObject(record.value());
 
                     Map<String, String> conditionMap = topicConditionMap.get(topic);
-                    if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
-                        checkRequest(addRequest, jsonReq);
-                    }
+                    // if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
+                    // checkRequest(addRequest, jsonReq);
+                    // }
 
                     writeToLog(writer, jsonReq);
                 });
