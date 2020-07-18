@@ -231,10 +231,10 @@ public class BigchainDBJavaDriver {
                     js.put("kafkaInTimestamp", LocalDateTime.now());
                     String rfq_form = js.toString();
 
-                    KafkaDriver kf = new KafkaDriver(rfq_form, tx_id);
-                    // for each topic in the request, it sends the request to the kafka driver.
-                    for (String topic : capability) {
-                        kf.runProducer(topic);
+                    if (!capability.isEmpty()) {
+                        KafkaDriver kf = new KafkaDriver(rfq_form, tx_id);
+                        // for each topic in the request, it sends the request to the kafka driver.
+                        kf.runProducer(capability.get(0));
                     }
                 }
                 // System.out.println(operation + " transaction pushed Successfully");

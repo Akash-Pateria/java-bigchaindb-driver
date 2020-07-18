@@ -39,17 +39,16 @@ public class ParallelConsumer implements Runnable {
                 Map<String, String> conditionMap = manager.getTopicConditionMap().get(topic);
 
                 consumerRecords.forEach(record -> {
-                    final JSONObject jsonReq = new JSONObject(record.value());
-                    String transactionId = jsonReq.getString("Transaction_id");
-
-                    if (!manager.getProcessedTransactionIds().contains(transactionId)
-                            && (conditionMap == null || checkConditions(jsonReq, conditionMap))) {
-                        manager.addProcessedTransactionIds(transactionId);
-                        checkRequest(jsonReq);
-                    }
-
-                    writeToLog(writer, jsonReq);
                     System.out.println("\nRecord: " + record.value());
+                    final JSONObject jsonReq = new JSONObject(record.value());
+
+                    // if (!manager.getProcessedTransactionIds().contains(transactionId)) {
+                    if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
+                        checkRequest(jsonReq);
+                        writeToLog(writer, jsonReq);
+                    }
+                    // manager.addProcessedTransactionIds(transactionId);
+                    // }
                 });
 
                 consumer.commitAsync();

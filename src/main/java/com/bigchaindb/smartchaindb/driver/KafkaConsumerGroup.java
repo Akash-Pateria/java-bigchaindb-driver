@@ -8,14 +8,14 @@ import org.json.JSONObject;
 public class KafkaConsumerGroup {
     protected Set<String> subscribedTopics;
     // protected List<JSONObject> RequestList;
-    protected Set<String> processedTransactionIds;
+    // protected Set<String> processedTransactionIds;
     protected Map<String, Map<String, String>> topicConditionMap;
     protected int rank;
 
     KafkaConsumerGroup() {
         subscribedTopics = new HashSet<>();
         // RequestList = new ArrayList<>();
-        processedTransactionIds = new ConcurrentHashSet<>();
+        // processedTransactionIds = new ConcurrentHashSet<>();
         topicConditionMap = new HashMap<>();
         rank = 0;
     }
@@ -56,13 +56,13 @@ public class KafkaConsumerGroup {
         this.subscribedTopics = subscribedTopics;
     }
 
-    public Set<String> getProcessedTransactionIds() {
-        return processedTransactionIds;
-    }
+    // public Set<String> getProcessedTransactionIds() {
+    // return processedTransactionIds;
+    // }
 
-    public void addProcessedTransactionIds(String transactionId) {
-        this.processedTransactionIds.add(transactionId);
-    }
+    // public void addProcessedTransactionIds(String transactionId) {
+    // this.processedTransactionIds.add(transactionId);
+    // }
 
     public Map<String, Map<String, String>> getTopicConditionMap() {
         return topicConditionMap;
