@@ -102,7 +102,7 @@ public class BigchainDBJavaDriver {
             Random random = new Random();
 
             for (int i = 0; i < numOfRequest; i++) {
-                // System.out.println("\n\nProcessing request#" + (i + 1));
+                System.out.println("\n\nProcessing request#" + (i + 1));
                 int productCount = random.nextInt(maxProductCountInRequest) + 1;
                 String quantity = StardogTest.getQuantity();
                 String material = StardogTest.getMaterial();
