@@ -75,7 +75,7 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        final int threadCount = 5;
+        final int threadCount = 10;
         for (int i = 0; i < threadCount; i++) {
             final Thread thread = new Thread(new ParallelProducers(examples, keys), "Producers-" + (i + 1));
             thread.start();
