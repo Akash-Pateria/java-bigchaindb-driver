@@ -102,7 +102,7 @@ public class BigchainDBJavaDriver {
             Random random = new Random();
 
             for (int i = 0; i < numOfRequest; i++) {
-                System.out.println("\n\nProcessing request#" + (i + 1));
+                // System.out.println("\n\nProcessing request#" + (i + 1));
                 int productCount = random.nextInt(maxProductCountInRequest) + 1;
                 String quantity = StardogTest.getQuantity();
                 String material = StardogTest.getMaterial();
@@ -341,7 +341,8 @@ public class BigchainDBJavaDriver {
             transaction = temp.sendTransaction(
                     handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(), capability));
 
-            System.out.println("(*) REQUEST Transaction sent.. - " + transaction.getId());
+            // System.out.println("(*) REQUEST Transaction sent.. - " +
+            // transaction.getId());
             return transaction.getId();
 
         } catch (IOException e) {
