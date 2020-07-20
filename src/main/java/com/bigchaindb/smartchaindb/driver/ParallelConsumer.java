@@ -29,7 +29,7 @@ public class ParallelConsumer implements Runnable {
     public void run() {
 
         try (BufferedWriter writer = new BufferedWriter(
-                new FileWriter(Thread.currentThread().getName() + ".csv", true))) {
+                new FileWriter(Thread.currentThread().getName() + "-" + this.topic + ".csv", true))) {
 
             consumer.subscribe(Collections.singletonList(topic));
 

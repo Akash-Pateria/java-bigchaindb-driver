@@ -77,7 +77,7 @@ public class BigchainDBJavaDriver {
         // topics to assign the requests
         topicToIdMap = CoordinatorDriver.getIdForTopics(topicToIdMap);
 
-        final int threadCount = 10;
+        final int threadCount = 5;
 
         for (int i = 0; i < threadCount; i++) {
             final Thread thread = new Thread(new ParallelProducers(examples, keys), "Producer-" + (i + 1));
@@ -374,7 +374,8 @@ public class BigchainDBJavaDriver {
             transaction = temp.sendTransaction(
                     handleServerResponse("REQUEST_FOR_QUOTE", metaData, transaction.getId(), capability));
 
-            System.out.println("(*) REQUEST Transaction sent.. - " + transaction.getId());
+            // System.out.println("(*) REQUEST Transaction sent.. - " +
+            // transaction.getId());
             return transaction.getId();
 
         } catch (IOException e) {
