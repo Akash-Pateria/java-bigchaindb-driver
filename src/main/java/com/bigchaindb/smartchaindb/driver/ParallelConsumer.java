@@ -42,13 +42,10 @@ public class ParallelConsumer implements Runnable {
                     System.out.println("\nRecord: " + record.value());
                     final JSONObject jsonReq = new JSONObject(record.value());
 
-                    // if (!manager.getProcessedTransactionIds().contains(transactionId)) {
                     if (conditionMap == null || checkConditions(jsonReq, conditionMap)) {
                         checkRequest(jsonReq);
                         writeToLog(writer, jsonReq);
                     }
-                    // manager.addProcessedTransactionIds(transactionId);
-                    // }
                 });
 
                 consumer.commitAsync();
@@ -67,7 +64,7 @@ public class ParallelConsumer implements Runnable {
          * for (String key : conditionMap.keySet()) { JSONArray jsonArray =
          * jsonReq.getJSONArray("products"); Gson gson = new Gson(); Type type = new
          * TypeToken<Map<String, String>>() { }.getType();
-         * 
+         *
          * for (int i = 0; i < jsonArray.length(); i++) { JSONObject currentObject =
          * jsonArray.getJSONObject(i); Map<String, String> productMetadata =
          * gson.fromJson(currentObject.toString(), type); } }

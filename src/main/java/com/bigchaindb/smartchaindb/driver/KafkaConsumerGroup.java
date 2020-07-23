@@ -6,36 +6,43 @@ import org.apache.mina.util.ConcurrentHashSet;
 import org.json.JSONObject;
 
 public class KafkaConsumerGroup {
-    protected Set<String> subscribedTopics;
-    // protected List<JSONObject> RequestList;
-    // protected Set<String> processedTransactionIds;
+    protected Map<String, Thread> topicConsumerThread;
     protected Map<String, Map<String, String>> topicConditionMap;
     protected int rank;
+    // protected Set<String> subscribedTopics;
+    // protected List<JSONObject> RequestList;
+    // protected Set<String> processedTransactionIds;
 
     KafkaConsumerGroup() {
-        subscribedTopics = new HashSet<>();
-        // RequestList = new ArrayList<>();
-        // processedTransactionIds = new ConcurrentHashSet<>();
+        topicConsumerThread = new HashMap<>();
         topicConditionMap = new HashMap<>();
         rank = 0;
+        // subscribedTopics = new HashSet<>();
+        // RequestList = new ArrayList<>();
+        // processedTransactionIds = new ConcurrentHashSet<>();
     }
 
     public KafkaConsumerGroup(List<String> topics, int managerRank) {
         this();
-        subscribedTopics.addAll(topics);
         this.rank = managerRank;
-        for (int i = 0; i < topics.size(); i++) {
-            String topic = topics.get(i);
-            ParallelConsumer consumer = new ParallelConsumer(this, topic, i);
-
-            final Thread thread = new Thread(consumer, "Consumer-" + managerRank + "-" + i);
-            System.out.println("\nThread" + thread.getName() + " subscribed to topic: " + topic);
-            thread.start();
-        }
+        subscribe(topics);
+        // subscribedTopics.addAll(topics);
     }
 
-    public void addTopic(String newTopic) {
-        subscribedTopics.add(newTopic);
+    public void addTopic(List<String> newTopics) {
+        // subscribedTopics.add(newTopic);
+        subscribe(newTopics);
+    }
+
+    public void unsubscribeTopics(List<String> topics) {
+        // subscribedTopics.add(newTopic);
+        for (int i = 0; i < topics.size(); i++) {
+            String topic = topics.get(i);
+            Thread consumerThread = topicConsumerThread.get(topic);
+
+            consumerThread.interrupt();
+            topicConsumerThread.remove(topic);
+        }
     }
 
     public void addConditions(String topic, String conditionKey, String conditionValue) {
@@ -49,20 +56,9 @@ public class KafkaConsumerGroup {
     }
 
     public Set<String> getSubscribedTopics() {
-        return subscribedTopics;
+        // return subscribedTopics;
+        return topicConsumerThread.keySet();
     }
-
-    public void setSubscribedTopics(Set<String> subscribedTopics) {
-        this.subscribedTopics = subscribedTopics;
-    }
-
-    // public Set<String> getProcessedTransactionIds() {
-    // return processedTransactionIds;
-    // }
-
-    // public void addProcessedTransactionIds(String transactionId) {
-    // this.processedTransactionIds.add(transactionId);
-    // }
 
     public Map<String, Map<String, String>> getTopicConditionMap() {
         return topicConditionMap;
@@ -78,5 +74,18 @@ public class KafkaConsumerGroup {
 
     public void setRank(int rank) {
         this.rank = rank;
+    }
+
+    private void subscribe(List<String> topics)
+    {
+        for (int i = 0; i < topics.size(); i++) {
+            String topic = topics.get(i);
+            ParallelConsumer consumer = new ParallelConsumer(this, topic, i);
+
+            final Thread thread = new Thread(consumer, "Consumer-" + rank + "-" + i);
+            topicConsumerThread.put(topic, thread);
+            System.out.println("\nThread" + thread.getName() + " subscribed to topic: " + topic);
+            thread.start();
+        }
     }
 }
